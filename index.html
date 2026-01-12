@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         :root {
             --bg-color: #f5f5f7; 
@@ -13,16 +15,14 @@
             --nm-btn-hover: 4px 4px 10px #c8c8cf, -3px -3px 8px #ffffff;
         }
 
-        * { scrollbar-gutter: stable; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; border: 2px solid var(--bg-color); }
+        * { scrollbar-gutter: stable; box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
 
         body { 
             background: var(--bg-color); color: var(--text-main); font-family: 'Inter', 'Pretendard', sans-serif; 
             margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden;
             -webkit-user-select: none; user-select: none;
-            transition: none; 
         }
 
         #project-viewport { 
@@ -34,87 +34,89 @@
 
         .project-card { min-width: 100%; height: 100vh; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; pointer-events: none; z-index: 9999; display: flex; justify-content: center; align-items: center; background: linear-gradient(to top, var(--bg-color) 60%, transparent); }
-        .nav-btn { position: absolute; bottom: 30px; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #555; opacity: 0; transition: 0.2s; pointer-events: auto; }
-        .nav-left { left: 25px; } .nav-right { right: 25px; }
+        /* 네비게이션 바 하단 최적화 */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 100px; pointer-events: none; z-index: 9999; display: flex; justify-content: center; align-items: center; background: linear-gradient(to top, var(--bg-color) 60%, transparent); }
+        .nav-btn { position: absolute; bottom: 25px; width: 32px; height: 32px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #555; opacity: 0; transition: 0.2s; pointer-events: auto; }
+        .nav-left { left: 20px; } .nav-right { right: 20px; }
 
-        .page-indicator { position: absolute; bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 0; opacity: 0; transition: 0.2s; pointer-events: none; }
-        .page-text { font-size: 11px; font-weight: 700; color: #777; letter-spacing: 1px; line-height: 1; margin-bottom: 4px; }
+        .page-indicator { position: absolute; bottom: 30px; display: flex; flex-direction: column; align-items: center; gap: 0; opacity: 0; transition: 0.2s; pointer-events: none; }
+        .page-text { font-size: 10px; font-weight: 700; color: #777; letter-spacing: 1px; line-height: 1; margin-bottom: 4px; }
 
         .trash-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; transition: 0.2s; }
         body.single-project .trash-btn { display: none !important; }
         
-        .trash-icon { width: 10px; height: 12px; border: 1.5px solid #888; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; position: relative; transition: 0.2s; }
-        .trash-icon::before { content: ''; position: absolute; top: -3.5px; left: -3px; width: 16px; height: 1.5px; background: #888; border-radius: 1px; transition: 0.2s; }
+        .trash-icon { width: 9px; height: 11px; border: 1.5px solid #888; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; position: relative; transition: 0.2s; }
+        .trash-icon::before { content: ''; position: absolute; top: -3px; left: -3px; width: 14px; height: 1.5px; background: #888; border-radius: 1px; transition: 0.2s; }
 
-        body.has-hero .nav-bar { display: none; }
-        .top-menu { position: fixed; top: 20px; right: 25px; display: flex; gap: 12px; z-index: 9500; }
-        .menu-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; }
-        .stop-icon { width: 9px; height: 9px; background: #333; border-radius: 1px; }
+        /* 상단 버튼 위치 스왑 및 센터링 유지 */
+        .top-menu { position: fixed; top: 15px; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 9500; pointer-events: none; }
+        .top-menu-inner { width: 100%; max-width: 400px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+        .menu-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; pointer-events: auto; }
+        .stop-icon { width: 8px; height: 8px; background: #333; border-radius: 1px; }
 
-        .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100vh; padding-top: calc(50vh - 70px); padding-bottom: 120px; box-sizing: border-box; }
-        body.multi-task:not(.has-hero) .task-container { padding-top: 130px; }
+        /* 컨테이너 패딩 조절 */
+        .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100vh; padding-top: 100px; padding-bottom: 120px; box-sizing: border-box; }
+        body.multi-task:not(.has-hero) .task-container { padding-top: 80px; }
 
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
         .task-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s ease; }
         .task-wrapper.completed { display: none !important; }
-        
         .task-wrapper.is-hidden { display: none !important; } 
         .task-wrapper.is-waiting { opacity: 0.2; pointer-events: none; }
 
         .input-group { position: relative; display: flex; align-items: center; width: 100%; justify-content: center; }
         .input-container { 
             position: relative; display: flex; align-items: center; 
-            background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); 
-            width: 180px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            background: var(--bg-color); border-radius: 12px; box-shadow: var(--nm-out); 
+            width: 200px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
             justify-content: center; z-index: 1; 
         }
 
-        .task-input { background: transparent; border: none; padding: 14px 0; font-size: 12px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
+        .task-input { background: transparent; border: none; padding: 12px 0; font-size: 11px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
         
-        .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
+        /* 버튼 위치 스왑: 시작(좌), 토글(우) */
+        .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
         .start-trigger { left: 8px; opacity: 0; }
-        .delete-trigger { right: 8px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
+        .delete-trigger { right: 8px; color: #ff6b6b; font-size: 10px; opacity: 0; pointer-events: none; }
 
         .input-group:hover .start-trigger { opacity: 0.8; }
         .task-wrapper:not(.main-task):not(.is-hero) .input-group:hover .delete-trigger { opacity: 0.8; pointer-events: auto; }
 
         .inner-toggle { position: absolute; right: 8px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
-        .is-hero .inner-toggle { width: 36px; opacity: 1; }
+        .is-hero .inner-toggle { width: 34px; opacity: 1; }
         
-        .toggle-frame { width: 34px; height: 18px; background: #e0e0e0; border-radius: 10px; display: flex; align-items: center; cursor: pointer; position: relative; transition: background 0.2s; }
-        .toggle-circle { width: 12px; height: 12px; background: #fff; border-radius: 50%; position: absolute; left: 3px; transition: 0.2s; }
+        .toggle-frame { width: 30px; height: 16px; background: #e0e0e0; border-radius: 10px; display: flex; align-items: center; cursor: pointer; position: relative; transition: background 0.2s; }
+        .toggle-circle { width: 10px; height: 10px; background: #fff; border-radius: 50%; position: absolute; left: 3px; transition: 0.2s; }
         .toggle-frame.active { background: var(--point-blue); }
-        .toggle-frame.active .toggle-circle { left: 19px; }
+        .toggle-frame.active .toggle-circle { left: 17px; }
 
-        .is-hero .input-container { width: 220px; transform: scale(1.05) !important; background: #ffffff; }
+        .is-hero .input-container { width: 230px; transform: scale(1.02) !important; background: #ffffff; }
         .is-hero .start-trigger { opacity: 1 !important; color: #5dade2; }
 
-        .bridge-zone { height: 50px; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
+        .bridge-zone { height: 40px; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
         body.has-hero .bridge-zone { opacity: 0; height: 0; overflow: hidden; }
-        .bridge-line { width: 1.5px; height: 18px; background: var(--line-color); opacity: 0.15; }
+        .bridge-line { width: 1.2px; height: 15px; background: var(--line-color); opacity: 0.15; }
         .task-list .task-wrapper:last-child .bridge-line { display: none; }
 
-        .bridge-add-btn { position: absolute; width: 20px; height: 20px; background: var(--bg-color); border: none; border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; z-index: 5; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; opacity: 0; line-height: 1; padding-right: 1px; padding-bottom: 2px; }
-        .bridge-add-btn:hover { box-shadow: var(--nm-btn-hover); transform: scale(1.1); }
+        .bridge-add-btn { position: absolute; width: 18px; height: 18px; background: var(--bg-color); border: none; border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; z-index: 5; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; opacity: 0; line-height: 1; }
         .bridge-zone:hover .bridge-add-btn { opacity: 1 !important; }
 
-        .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
-        .pause-icon { display: flex; gap: 3.5px; } .pause-icon div { width: 2.5px; height: 10px; background: #333; }
+        .play-icon { width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid #333; margin-left: 2px; }
+        .pause-icon { display: flex; gap: 3px; } .pause-icon div { width: 2px; height: 8px; background: #333; }
 
         #finish-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
-        .select-main { width: 200px; padding: 14px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; }
-        .dropdown-container { position: relative; width: 200px; }
-        .select-options { position: absolute; top: 58px; left: 0; width: 100%; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); display: none; flex-direction: column; z-index: 8001; padding: 6px 0; }
+        .select-main { width: 180px; padding: 12px 18px; background: var(--bg-color); border-radius: 12px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 11px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; }
+        .dropdown-container { position: relative; width: 180px; }
+        .select-options { position: absolute; top: 50px; left: 0; width: 100%; background: var(--bg-color); border-radius: 12px; box-shadow: var(--nm-out); display: none; flex-direction: column; z-index: 8001; padding: 5px 0; }
         .dropdown-container.open .select-options { display: flex; }
-        .option-item { padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; }
+        .option-item { padding: 12px 18px; font-size: 11px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; }
         .option-item:hover { background: #e8e8ea; color: var(--point-blue); }
 
-        #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: none; }
-        .plane-icon { width: 60px; height: 60px; fill: #444; opacity: 0.7; animation: plane-fly 4s ease-in-out infinite; }
-        .cloud-icon { width: 100px; fill: #ffffff; opacity: 0.5; position: absolute; animation: cloud-move 15s linear infinite; }
-        @keyframes plane-fly { 0%, 100% { transform: translate(0, 0) rotate(5deg); } 50% { transform: translate(15px, -20px) rotate(-5deg); } }
-        @keyframes cloud-move { from { transform: translateX(200vw); } to { transform: translateX(-100vw); } }
+        #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+        .plane-icon { width: 50px; height: 50px; fill: #444; opacity: 0.7; animation: plane-fly 4s ease-in-out infinite; }
+        .cloud-icon { width: 80px; fill: #ffffff; opacity: 0.5; position: absolute; animation: cloud-move 15s linear infinite; }
+        @keyframes plane-fly { 0%, 100% { transform: translate(0, 0) rotate(5deg); } 50% { transform: translate(12px, -15px) rotate(-5deg); } }
+        @keyframes cloud-move { from { transform: translateX(150vw); } to { transform: translateX(-100vw); } }
         .ending-bg-active { background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%) !important; }
 
         body.empty-state #project-viewport, body.empty-state .nav-bar, body.empty-state #finish-screen { display: none !important; }
@@ -129,15 +131,17 @@
     </div>
 
     <div class="top-menu">
-        <div class="menu-btn" onclick="playSnd('H.wav'); handleMainBtn();"><div class="stop-icon"></div></div>
-        <div class="menu-btn" onclick="playSnd('H.wav'); exitApp();">✕</div>
+        <div class="top-menu-inner">
+            <div class="menu-btn" onclick="playSnd('H.wav'); exitApp();" title="Exit">✕</div>
+            <div class="menu-btn" onclick="playSnd('H.wav'); handleMainBtn();" title="Main"><div class="stop-icon"></div></div>
+            <div style="width: 32px;"></div> </div>
     </div>
 
     <div class="nav-bar">
         <div class="nav-btn nav-left" id="btn-left" onclick="playSnd('H.wav'); moveCard(-1)">❮</div>
         <div class="page-indicator" id="indicator">
             <div class="page-text" id="page-num">1 / 1</div>
-            <div class="trash-container" style="position: absolute; top: 22px; display: flex; justify-content: center; width: 100%;">
+            <div class="trash-container" style="position: absolute; top: 20px; display: flex; justify-content: center; width: 100%;">
                 <div class="trash-btn" id="project-trash" onclick="playSnd('H.wav'); deleteCurrentProject();">
                     <div class="trash-icon"></div>
                 </div>
@@ -150,7 +154,7 @@
 
     <div id="finish-screen">
         <div class="dropdown-container" id="dropdown">
-            <div class="select-main" onclick="playSnd('G.wav'); toggleDropdown();"><span>선택</span><div style="width: 8px; height: 8px; border-right: 2px solid #555; border-bottom: 2px solid #555; transform: rotate(45deg); transition: 0.3s; margin-top: -4px;"></div></div>
+            <div class="select-main" onclick="playSnd('G.wav'); toggleDropdown();"><span>선택</span><div style="width: 7px; height: 7px; border-right: 2px solid #555; border-bottom: 2px solid #555; transform: rotate(45deg); transition: 0.3s; margin-top: -4px;"></div></div>
             <div class="select-options">
                 <div class="option-item" onmouseover="playSnd('H.wav')" onclick="handleFinishAction();">모든 짐 내려놓기</div>
                 <div class="option-item" onmouseover="playSnd('H.wav')" onclick="resetApp();">새로운 시작</div>
@@ -163,18 +167,14 @@
         let currentIdx = 0;
         let isEndingAction = false;
 
-        // [소리 재생 방식 수정 - 웹 표준 오디오]
         function playSnd(name) {
-            // .wav가 안 붙어 있으면 붙여줌
             const fileName = name.includes('.wav') ? name : name + '.wav';
             try {
                 const audio = new Audio(fileName);
                 audio.play().catch(e => console.log("Play blocked:", e));
             } catch(e) {}
         }
-        function stopSnd() { /* 일반 웹 오디오는 개별 제어가 필요해 일단 생략 */ }
 
-        // [저장/불러오기 방식 수정 - localStorage]
         window.onload = function() {
             const saved = localStorage.getItem('stack_app_data');
             if (saved) {
@@ -199,11 +199,9 @@
                     projects[idx].tasks = tasks;
                 }
             });
-            // localStorage에 저장
             localStorage.setItem('stack_app_data', JSON.stringify({ projects, currentIdx }));
         }
 
-        // [이하 유빈이의 로직 유지]
         function showNav(e) {
             const h = window.innerHeight;
             const lb = document.getElementById('btn-left'), rb = document.getElementById('btn-right'), ind = document.getElementById('indicator');
@@ -296,7 +294,7 @@
                     playSnd('F.wav'); document.getElementById('finish-screen').style.display = 'flex';
                 }
                 saveData(true);
-            }, 300); 
+            }, 300); // 요란하지 않게 차분한 애니메이션 속도
         }
 
         function handleFinishAction() {
@@ -325,7 +323,7 @@
                 document.getElementById('ending-overlay').style.display = 'none';
                 document.getElementById('project-viewport').style.display = 'flex';
                 document.querySelector('.nav-bar').style.display = 'flex';
-            }, 23000);
+            }, 10000); // 10초 정도로 비행기 애니메이션 조정
         }
 
         function stopHero(silent = false) {
@@ -362,15 +360,9 @@
             const idx = all.indexOf(hero);
 
             all.forEach((el, i) => {
-                if(i > idx) {
-                    el.classList.add('is-hidden'); 
-                    el.classList.remove('is-waiting');
-                } else if(i < idx) {
-                    el.classList.add('is-waiting');
-                    el.classList.remove('is-hidden');
-                } else {
-                    el.classList.remove('is-waiting', 'is-hidden');
-                }
+                if(i > idx) { el.classList.add('is-hidden'); el.classList.remove('is-waiting'); }
+                else if(i < idx) { el.classList.add('is-waiting'); el.classList.remove('is-hidden'); }
+                else { el.classList.remove('is-waiting', 'is-hidden'); }
             });
         }
 
@@ -396,16 +388,14 @@
             document.getElementById('ending-overlay').style.display = 'none';
             document.getElementById('project-viewport').style.display = 'flex';
             document.querySelector('.nav-bar').style.display = 'flex';
-            
             projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
             currentIdx = 0;
-            renderAllCards(); 
-            saveData(true);
+            renderAllCards(); saveData(true);
         }
 
         function exitApp() { 
             saveData(true);
-            window.close(); // 일반 웹에서는 창 닫기 시도
+            window.close(); 
         }
         function toggleDropdown() { document.getElementById('dropdown').classList.toggle('open'); }
         function resetApp() { handleMainBtn(); }
