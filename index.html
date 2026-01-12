@@ -25,16 +25,41 @@
             -webkit-user-select: none; user-select: none;
         }
 
-        #project-viewport { 
-            display: flex; width: 100%; height: 100vh; 
-            transition: transform 0s; 
-            align-items: flex-start; 
-        }
+        #project-viewport { display: flex; width: 100%; height: 100vh; transition: transform 0s; align-items: flex-start; }
         #project-viewport.ready { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
         .project-card { min-width: 100%; height: 100vh; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; }
 
-        /* 네비게이션 바 하단 최적화 */
+        /* --- 상단 메뉴 버튼 위치 수정 (유빈이 피드백 반영) --- */
+        .top-menu { 
+            position: fixed; 
+            top: 20px; 
+            left: 0; 
+            width: 100%; 
+            padding: 0 20px; /* 양쪽 여백 */
+            display: flex; 
+            justify-content: space-between; /* 양 끝으로 배치 */
+            align-items: center; 
+            z-index: 9500; 
+            pointer-events: none; 
+        }
+        .menu-btn { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            background: var(--bg-color); 
+            box-shadow: var(--nm-btn); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            color: #555; 
+            transition: 0.2s; 
+            pointer-events: auto; 
+        }
+        .stop-icon { width: 8px; height: 8px; background: #333; border-radius: 1px; }
+
+        /* 하단 네비게이션 */
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 100px; pointer-events: none; z-index: 9999; display: flex; justify-content: center; align-items: center; background: linear-gradient(to top, var(--bg-color) 60%, transparent); }
         .nav-btn { position: absolute; bottom: 25px; width: 32px; height: 32px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #555; opacity: 0; transition: 0.2s; pointer-events: auto; }
         .nav-left { left: 20px; } .nav-right { right: 20px; }
@@ -44,18 +69,11 @@
 
         .trash-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; transition: 0.2s; }
         body.single-project .trash-btn { display: none !important; }
-        
-        .trash-icon { width: 9px; height: 11px; border: 1.5px solid #888; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; position: relative; transition: 0.2s; }
-        .trash-icon::before { content: ''; position: absolute; top: -3px; left: -3px; width: 14px; height: 1.5px; background: #888; border-radius: 1px; transition: 0.2s; }
+        .trash-icon { width: 9px; height: 11px; border: 1.5px solid #888; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; position: relative; }
+        .trash-icon::before { content: ''; position: absolute; top: -3px; left: -3px; width: 14px; height: 1.5px; background: #888; }
 
-        /* 상단 버튼 위치 스왑 및 센터링 유지 */
-        .top-menu { position: fixed; top: 15px; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 9500; pointer-events: none; }
-        .top-menu-inner { width: 100%; max-width: 400px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
-        .menu-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; pointer-events: auto; }
-        .stop-icon { width: 8px; height: 8px; background: #333; border-radius: 1px; }
-
-        /* 컨테이너 패딩 조절 */
-        .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100vh; padding-top: 100px; padding-bottom: 120px; box-sizing: border-box; }
+        /* 컨테이너 */
+        .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100vh; padding-top: 100px; padding-bottom: 120px; }
         body.multi-task:not(.has-hero) .task-container { padding-top: 80px; }
 
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
@@ -64,52 +82,49 @@
         .task-wrapper.is-hidden { display: none !important; } 
         .task-wrapper.is-waiting { opacity: 0.2; pointer-events: none; }
 
+        /* 입력창 너비 확장 (글자 잘림 방지) */
         .input-group { position: relative; display: flex; align-items: center; width: 100%; justify-content: center; }
         .input-container { 
             position: relative; display: flex; align-items: center; 
             background: var(--bg-color); border-radius: 12px; box-shadow: var(--nm-out); 
-            width: 200px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            width: 240px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
             justify-content: center; z-index: 1; 
         }
-
         .task-input { background: transparent; border: none; padding: 12px 0; font-size: 11px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
         
-        /* 버튼 위치 스왑: 시작(좌), 토글(우) */
+        /* 버튼 위치: 시작(좌), 토글(우) */
         .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
         .start-trigger { left: 8px; opacity: 0; }
         .delete-trigger { right: 8px; color: #ff6b6b; font-size: 10px; opacity: 0; pointer-events: none; }
-
         .input-group:hover .start-trigger { opacity: 0.8; }
         .task-wrapper:not(.main-task):not(.is-hero) .input-group:hover .delete-trigger { opacity: 0.8; pointer-events: auto; }
 
         .inner-toggle { position: absolute; right: 8px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
         .is-hero .inner-toggle { width: 34px; opacity: 1; }
         
-        .toggle-frame { width: 30px; height: 16px; background: #e0e0e0; border-radius: 10px; display: flex; align-items: center; cursor: pointer; position: relative; transition: background 0.2s; }
+        .toggle-frame { width: 30px; height: 16px; background: #e0e0e0; border-radius: 10px; display: flex; align-items: center; cursor: pointer; position: relative; }
         .toggle-circle { width: 10px; height: 10px; background: #fff; border-radius: 50%; position: absolute; left: 3px; transition: 0.2s; }
         .toggle-frame.active { background: var(--point-blue); }
         .toggle-frame.active .toggle-circle { left: 17px; }
 
-        .is-hero .input-container { width: 230px; transform: scale(1.02) !important; background: #ffffff; }
+        .is-hero .input-container { width: 260px; transform: scale(1.02) !important; background: #ffffff; }
         .is-hero .start-trigger { opacity: 1 !important; color: #5dade2; }
 
         .bridge-zone { height: 40px; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
         body.has-hero .bridge-zone { opacity: 0; height: 0; overflow: hidden; }
         .bridge-line { width: 1.2px; height: 15px; background: var(--line-color); opacity: 0.15; }
-        .task-list .task-wrapper:last-child .bridge-line { display: none; }
-
-        .bridge-add-btn { position: absolute; width: 18px; height: 18px; background: var(--bg-color); border: none; border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; z-index: 5; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; opacity: 0; line-height: 1; }
+        .bridge-add-btn { position: absolute; width: 18px; height: 18px; background: var(--bg-color); border: none; border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0; }
         .bridge-zone:hover .bridge-add-btn { opacity: 1 !important; }
 
         .play-icon { width: 0; height: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid #333; margin-left: 2px; }
         .pause-icon { display: flex; gap: 3px; } .pause-icon div { width: 2px; height: 8px; background: #333; }
 
         #finish-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
-        .select-main { width: 180px; padding: 12px 18px; background: var(--bg-color); border-radius: 12px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 11px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; }
+        .select-main { width: 180px; padding: 12px 18px; background: var(--bg-color); border-radius: 12px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 11px; font-weight: 700; color: var(--text-main); }
         .dropdown-container { position: relative; width: 180px; }
         .select-options { position: absolute; top: 50px; left: 0; width: 100%; background: var(--bg-color); border-radius: 12px; box-shadow: var(--nm-out); display: none; flex-direction: column; z-index: 8001; padding: 5px 0; }
         .dropdown-container.open .select-options { display: flex; }
-        .option-item { padding: 12px 18px; font-size: 11px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; }
+        .option-item { padding: 12px 18px; font-size: 11px; font-weight: 600; color: var(--text-main); cursor: pointer; }
         .option-item:hover { background: #e8e8ea; color: var(--point-blue); }
 
         #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
@@ -131,10 +146,8 @@
     </div>
 
     <div class="top-menu">
-        <div class="top-menu-inner">
-            <div class="menu-btn" onclick="playSnd('H.wav'); exitApp();" title="Exit">✕</div>
-            <div class="menu-btn" onclick="playSnd('H.wav'); handleMainBtn();" title="Main"><div class="stop-icon"></div></div>
-            <div style="width: 32px;"></div> </div>
+        <div class="menu-btn" onclick="playSnd('H.wav'); handleMainBtn();" title="Main"><div class="stop-icon"></div></div>
+        <div class="menu-btn" onclick="playSnd('H.wav'); exitApp();" title="Exit">✕</div>
     </div>
 
     <div class="nav-bar">
@@ -188,7 +201,7 @@
             setTimeout(() => vp.classList.add('ready'), 50);
         };
 
-        function saveData(isSilent = false) {
+        function saveData() {
             const cards = document.querySelectorAll('.project-card');
             cards.forEach((card, idx) => {
                 if (projects[idx]) {
@@ -231,18 +244,13 @@
             viewport.style.transform = `translateX(-${currentIdx * 100}%)`;
             document.getElementById('page-num').innerText = `${currentIdx + 1} / ${projects.length}`;
             document.body.classList.toggle('single-project', projects.length <= 1);
-            const cards = document.querySelectorAll('.project-card');
-            if(cards[currentIdx]) {
-                const tasksCount = cards[currentIdx].querySelectorAll('.task-wrapper:not(.completed)').length;
-                document.body.classList.toggle('multi-task', tasksCount > 1);
-            }
         }
 
         function deleteCurrentProject() {
             if (projects.length <= 1) return;
             projects.splice(currentIdx, 1);
             if (currentIdx >= projects.length) currentIdx = projects.length - 1;
-            renderAllCards(); saveData(true);
+            renderAllCards(); saveData();
         }
 
         function createTaskElement(val, isMain) {
@@ -270,20 +278,18 @@
                 projects.push({ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] });
                 renderAllCards();
             } else { updateViewport(); }
-            saveData(true);
+            saveData();
         }
 
         function handleToggle(el) {
             if (el.classList.contains('active')) return;
             playSnd('D.wav'); el.classList.add('active');
             const currentWrapper = el.closest('.task-wrapper');
-            
             setTimeout(() => {
                 currentWrapper.classList.add('completed');
                 const card = currentWrapper.closest('.project-card');
                 const allRemaining = Array.from(card.querySelectorAll('.task-wrapper:not(.completed):not(.is-hidden)'));
                 const nextHero = allRemaining[allRemaining.length - 1];
-                
                 if (nextHero) {
                     nextHero.classList.remove('is-waiting');
                     nextHero.classList.add('is-hero');
@@ -293,8 +299,8 @@
                 } else {
                     playSnd('F.wav'); document.getElementById('finish-screen').style.display = 'flex';
                 }
-                saveData(true);
-            }, 300); // 요란하지 않게 차분한 애니메이션 속도
+                saveData();
+            }, 300);
         }
 
         function handleFinishAction() {
@@ -305,7 +311,6 @@
             document.querySelector('.nav-bar').style.display = 'none';
             document.body.classList.add('ending-bg-active');
             document.getElementById('ending-overlay').style.display = 'flex';
-
             setTimeout(() => {
                 if (!isEndingAction) return; 
                 isEndingAction = false;
@@ -318,12 +323,12 @@
                     document.body.classList.add('empty-state');
                     projects = [];
                 }
-                saveData(true);
+                saveData();
                 document.body.classList.remove('ending-bg-active');
                 document.getElementById('ending-overlay').style.display = 'none';
                 document.getElementById('project-viewport').style.display = 'flex';
                 document.querySelector('.nav-bar').style.display = 'flex';
-            }, 10000); // 10초 정도로 비행기 애니메이션 조정
+            }, 5000);
         }
 
         function stopHero(silent = false) {
@@ -358,7 +363,6 @@
             const hero = currentCard.querySelector('.is-hero');
             if(!hero) return;
             const idx = all.indexOf(hero);
-
             all.forEach((el, i) => {
                 if(i > idx) { el.classList.add('is-hidden'); el.classList.remove('is-waiting'); }
                 else if(i < idx) { el.classList.add('is-waiting'); el.classList.remove('is-hidden'); }
@@ -375,10 +379,10 @@
             const prompt = currentWrapper === list.lastElementChild ? "그 일의 시작은?" : "이 사이에 들어갈 일은?";
             const newTask = createTaskElement(prompt, false);
             list.insertBefore(newTask, currentWrapper.nextSibling);
-            updateViewport(); saveData(true);
+            saveData();
         }
 
-        function deleteTask(btn) { btn.closest('.task-wrapper').remove(); updateViewport(); saveData(true); stopHero(true); }
+        function deleteTask(btn) { btn.closest('.task-wrapper').remove(); saveData(); stopHero(true); }
         
         function handleMainBtn() { 
             isEndingAction = false;
@@ -390,13 +394,10 @@
             document.querySelector('.nav-bar').style.display = 'flex';
             projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
             currentIdx = 0;
-            renderAllCards(); saveData(true);
+            renderAllCards(); saveData();
         }
 
-        function exitApp() { 
-            saveData(true);
-            window.close(); 
-        }
+        function exitApp() { saveData(); window.close(); }
         function toggleDropdown() { document.getElementById('dropdown').classList.toggle('open'); }
         function resetApp() { handleMainBtn(); }
     </script>
