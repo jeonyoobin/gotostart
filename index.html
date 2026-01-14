@@ -15,8 +15,10 @@
             --nm-btn-hover: 4px 4px 10px #c8c8cf, -3px -3px 8px #ffffff;
         }
 
-        /* [수정 1] 전역(*)에 있던 스크롤 공간 확보 설정을 삭제하여 엔딩 화면의 회색 줄 제거 */
-        /* * { scrollbar-gutter: stable; } 삭제됨 */
+        /* [수정 1] 엔딩 화면(empty-state)일 때는 스크롤 자체를 막아서 회색 줄 원천 차단 */
+        * { scrollbar-gutter: stable; }
+        body.empty-state { overflow: hidden !important; }
+        body.empty-state * { scrollbar-gutter: auto; }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -34,10 +36,8 @@
             z-index: 10000; -webkit-app-region: drag; pointer-events: none;
         }
 
-        /* [수정 1-1] 스크롤 공간 확보(화면 덜컥거림 방지)는 오직 프로젝트 화면에만 적용 */
         #project-viewport { 
             display: flex; width: 100%; height: 100vh; transition: transform 0s; align-items: flex-start; 
-            scrollbar-gutter: stable; /* 여기서만 적용 */
         }
         #project-viewport.ready { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
@@ -75,7 +75,10 @@
         .task-wrapper.is-waiting { opacity: 0.2; pointer-events: none; }
 
         .input-group { position: relative; display: flex; align-items: center; width: 100%; justify-content: center; }
+        /* [수정 4] 플레이 버튼 호버 시 컨테이너 확장 애니메이션 복구 */
         .input-container { position: relative; display: flex; align-items: center; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); width: 180px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); justify-content: center; z-index: 1; }
+        .input-container:has(.start-trigger:hover) { transform: scale(1.03); box-shadow: 0 0 18px rgba(74, 126, 179, 0.1), var(--nm-out); background: #ffffff; }
+
         .task-input { background: transparent; border: none; padding: 14px 0; font-size: 12px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
         
         .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; -webkit-app-region: no-drag; }
@@ -99,15 +102,30 @@
         .bridge-zone { height: 40px; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
         body.has-hero .bridge-zone { opacity: 0; height: 0; overflow: hidden; }
         .bridge-line { width: 1.5px; height: 14px; background: var(--line-color); opacity: 0.15; }
-        .bridge-add-btn { position: absolute; width: 20px; height: 20px; background: var(--bg-color); border: none; border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; z-index: 5; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; opacity: 0; line-height: 1; -webkit-app-region: no-drag; }
+        
+        /* [수정 2] + 버튼 정렬 수정: 패딩 제거하고 line-height로 수직 중앙 정렬 맞춤 */
+        .bridge-add-btn { 
+            position: absolute; width: 20px; height: 20px; 
+            background: var(--bg-color); border: none; border-radius: 50%; 
+            color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; 
+            z-index: 5; transition: 0.2s; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 16px; font-weight: 800; opacity: 0; 
+            line-height: 1; padding: 0; padding-bottom: 2px; /* 살짝 들어올림 */
+            -webkit-app-region: no-drag; 
+        }
+        .bridge-add-btn:hover { box-shadow: var(--nm-btn-hover); transform: scale(1.1); }
         .bridge-zone:hover .bridge-add-btn { opacity: 1 !important; }
 
-        /* [수정 2] 엔딩 화면 위치 조정 (padding-bottom을 120px -> 50px로 줄여서 너무 높지 않게) */
+        .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
+        .pause-icon { display: flex; gap: 3.5px; } .pause-icon div { width: 2.5px; height: 10px; background: #333; }
+
+        /* [수정 3] 엔딩 화면 위치 1cm 하향 조정 (padding-bottom을 0으로 설정하여 정중앙 배치) */
         #finish-screen { 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; 
             flex-direction: column; align-items: center; justify-content: center; 
             background: var(--bg-color); z-index: 8000; 
-            padding-bottom: 50px; /* 여기를 줄였습니다 */
+            padding-bottom: 0; /* 기존 50px에서 0으로 변경하여 아래로 내림 */
             box-sizing: border-box; 
         }
         
