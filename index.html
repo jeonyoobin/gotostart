@@ -15,6 +15,7 @@
             --nm-btn-hover: 4px 4px 10px #c8c8cf, -3px -3px 8px #ffffff;
         }
 
+        /* 회색 줄 방지 */
         html, body { scrollbar-gutter: auto; } 
         body.empty-state { overflow: hidden !important; scrollbar-gutter: auto !important; }
 
@@ -63,8 +64,8 @@
 
         .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; box-sizing: border-box; } 
         
-        /* [수정 1] 메인 화면 텍스트바 위치 조정 (190px -> 260px로 늘려서 더 아래로 내림) */
-        .scroll-spacer { height: 260px; width: 100%; flex-shrink: 0; }
+        /* [수정] 높이를 140px로 줄여서 텍스트바를 위쪽(북쪽)으로 끌어올림 */
+        .scroll-spacer { height: 140px; width: 100%; flex-shrink: 0; }
 
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
         .task-list .task-wrapper:last-child .bridge-line { display: none; }
@@ -115,7 +116,7 @@
         .bridge-add-btn:hover { box-shadow: var(--nm-btn-hover); transform: scale(1.1); }
         .bridge-zone:hover .bridge-add-btn { opacity: 1 !important; }
 
-        /* [수정 2] 텍스트바가 하나만 있을 때(:only-child)는 + 버튼 항상 표시 */
+        /* 텍스트바가 하나뿐일 때(:only-child)는 상단 + 버튼 항상 표시 */
         .task-wrapper:only-child .bridge-add-btn { opacity: 1 !important; }
 
         .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
@@ -336,12 +337,10 @@
             });
         }
 
-        /* [수정 3] + 버튼의 위치(Top vs Middle)에 따라 메시지를 다르게 출력하는 로직 복구 */
         function addTask(btn) { 
             playSnd('A'); 
             const currentWrapper = btn.closest('.task-wrapper'); 
             const list = currentWrapper.closest('.task-list'); 
-            // 시각적 상단(DOM상 마지막)이면 "시작", 아니면 "사이"
             const prompt = currentWrapper === list.lastElementChild ? "그 일의 시작은?" : "이 사이에 들어갈 일은?";
             const newTask = createTaskElement(prompt, false); 
             list.insertBefore(newTask, currentWrapper.nextSibling); 
