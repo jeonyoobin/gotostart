@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>시작으로가</title>
     <style>
-        /* 기존 스타일과 레이아웃은 그대로 유지합니다 */
         :root {
             --bg-color: #f5f5f7; 
             --text-main: #3d444b; 
@@ -28,42 +27,38 @@
             transition: none; 
         }
 
-        #project-viewport { 
-            display: flex; width: 100%; height: 100vh; 
-            transition: transform 0s; 
-            align-items: flex-start; 
+        /* [수정] 윈도우 창 이동을 위한 드래그 영역 */
+        .drag-handle {
+            position: fixed; top: 0; left: 0; width: calc(100% - 100px); height: 60px;
+            z-index: 10000; -webkit-app-region: drag; pointer-events: none;
         }
+
+        #project-viewport { display: flex; width: 100%; height: 100vh; transition: transform 0s; align-items: flex-start; }
         #project-viewport.ready { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
-        .project-card { 
-            min-width: 100%; height: 100vh; 
-            overflow-y: hidden; 
-            overflow-x: hidden; 
-            display: flex; flex-direction: column; align-items: center; 
-        }
+        .project-card { min-width: 100%; height: 100vh; overflow-y: hidden; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; }
         #project-viewport.ready .project-card { overflow-y: auto; }
 
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; pointer-events: none; z-index: 9999; display: flex; justify-content: center; align-items: center; background: linear-gradient(to top, var(--bg-color) 60%, transparent); }
-        .nav-btn { position: absolute; bottom: 30px; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #555; opacity: 0; transition: 0.2s; pointer-events: auto; }
+        .nav-btn { position: absolute; bottom: 30px; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #555; opacity: 0; transition: 0.2s; pointer-events: auto; -webkit-app-region: no-drag; }
         .nav-left { left: 25px; } .nav-right { right: 25px; }
 
         .page-indicator { position: absolute; bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 0; opacity: 0; transition: 0.2s; pointer-events: none; }
         .page-text { font-size: 11px; font-weight: 700; color: #777; letter-spacing: 1px; line-height: 1; margin-bottom: 4px; }
 
-        .trash-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; transition: 0.2s; }
+        .trash-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; transition: 0.2s; -webkit-app-region: no-drag; }
         body.single-project .trash-btn { display: none !important; }
         
         .trash-icon { width: 10px; height: 12px; border: 1.5px solid #888; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; position: relative; transition: 0.2s; }
         .trash-icon::before { content: ''; position: absolute; top: -3.5px; left: -3px; width: 16px; height: 1.5px; background: #888; border-radius: 1px; transition: 0.2s; }
 
         body.has-hero .nav-bar { display: none; }
-        .top-menu { position: fixed; top: 20px; right: 25px; display: flex; gap: 12px; z-index: 9900; } 
-        .menu-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; }
+        .top-menu { position: fixed; top: 20px; right: 25px; display: flex; gap: 12px; z-index: 10005; } 
+        .menu-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; -webkit-app-region: no-drag; }
         .stop-icon { width: 9px; height: 9px; background: #333; border-radius: 1px; }
 
         .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; box-sizing: border-box; } 
         .scroll-spacer { height: 190px; width: 100%; flex-shrink: 0; }
-
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
         .task-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s ease; }
         .task-wrapper.completed { display: none !important; }
@@ -72,10 +67,9 @@
 
         .input-group { position: relative; display: flex; align-items: center; width: 100%; justify-content: center; }
         .input-container { position: relative; display: flex; align-items: center; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); width: 180px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); justify-content: center; z-index: 1; }
-        .input-container:has(.start-trigger:hover) { transform: scale(1.03); box-shadow: 0 0 18px rgba(74, 126, 179, 0.1), var(--nm-out); background: #ffffff; }
-
         .task-input { background: transparent; border: none; padding: 14px 0; font-size: 12px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
-        .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
+        
+        .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; -webkit-app-region: no-drag; }
         .start-trigger { left: 8px; opacity: 0; }
         .delete-trigger { right: 8px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
 
@@ -85,7 +79,7 @@
         .inner-toggle { position: absolute; right: 8px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
         .is-hero .inner-toggle { width: 36px; opacity: 1; }
         
-        .toggle-frame { width: 34px; height: 18px; background: #e0e0e0; border-radius: 10px; display: flex; align-items: center; cursor: pointer; position: relative; transition: background 0.2s; }
+        .toggle-frame { width: 34px; height: 18px; background: #e0e0e0; border-radius: 10px; display: flex; align-items: center; cursor: pointer; position: relative; transition: background 0.2s; -webkit-app-region: no-drag; }
         .toggle-circle { width: 12px; height: 12px; background: #fff; border-radius: 50%; position: absolute; left: 3px; transition: 0.2s; }
         .toggle-frame.active { background: var(--point-blue); }
         .toggle-frame.active .toggle-circle { left: 19px; }
@@ -96,18 +90,18 @@
         .bridge-zone { height: 40px; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
         body.has-hero .bridge-zone { opacity: 0; height: 0; overflow: hidden; }
         .bridge-line { width: 1.5px; height: 14px; background: var(--line-color); opacity: 0.15; }
-        .bridge-add-btn { position: absolute; width: 20px; height: 20px; background: var(--bg-color); border: none; border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; z-index: 5; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; opacity: 0; line-height: 1; padding-right: 1px; padding-bottom: 2px; }
+        .bridge-add-btn { position: absolute; width: 20px; height: 20px; background: var(--bg-color); border: none; border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; z-index: 5; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; opacity: 0; line-height: 1; -webkit-app-region: no-drag; }
         .bridge-zone:hover .bridge-add-btn { opacity: 1 !important; }
 
         .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
         .pause-icon { display: flex; gap: 3.5px; } .pause-icon div { width: 2.5px; height: 10px; background: #333; }
 
         #finish-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
-        .select-main { width: 200px; padding: 14px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; }
+        .select-main { width: 200px; padding: 14px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; -webkit-app-region: no-drag; }
         .dropdown-container { position: relative; width: 200px; }
         .select-options { position: absolute; top: 58px; left: 0; width: 100%; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); display: none; flex-direction: column; z-index: 8001; padding: 6px 0; }
         .dropdown-container.open .select-options { display: flex; }
-        .option-item { padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; }
+        .option-item { padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; -webkit-app-region: no-drag; }
         .option-item:hover { background: #e8e8ea; color: var(--point-blue); }
 
         #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: none; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); }
@@ -120,6 +114,7 @@
     </style>
 </head>
 <body id="main-body" onmousemove="showNav(event)">
+    <div class="drag-handle"></div>
 
     <div id="ending-overlay">
         <svg class="cloud-icon" style="top: 20%; animation-delay: -2s;" viewBox="0 0 24 24"><path d="M17.5,19c-3,0-5.5-2.5-5.5-5.5c0-0.1,0-0.2,0-0.3c-0.5,0.2-1.1,0.3-1.7,0.3c-2.4,0-4.3-1.9-4.3-4.3c0-0.3,0-0.6,0.1-0.8 C4.2,9,2.5,10.8,2.5,13c0,3,2.5,5.5,5.5,5.5h9.5c2.2,0,4-1.8,4-4c0-2.2-1.8-4-4-4c-0.3,0-0.5,0-0.8,0.1c-0.2-2.7-2.5-4.8-5.2-4.8 c-1.6,0-3,0.7-3.9,1.8C8.1,7.2,8.5,7,9,7c2.8,0,5,2.2,5,5c0,0.3,0,0.5-0.1,0.8c1.3,0,2.4,0.7,3.1,1.8c0.2-0.1,0.3-0.1,0.5-0.1 c1.4,0,2.5,1.1,2.5,2.5S18.9,19.5,17.5,19z"/></svg>
@@ -148,7 +143,7 @@
 
     <div id="finish-screen">
         <div class="dropdown-container" id="dropdown">
-            <div class="select-main" onclick="playSnd('G'); toggleDropdown();"><span>선택</span><div style="width: 8px; height: 8px; border-right: 2px solid #555; border-bottom: 2px solid #555; transform: rotate(45deg); transition: 0.3s; margin-top: -4px;"></div></div>
+            <div class="select-main" onclick="playSnd('G', true); toggleDropdown();"><span>선택</span><div style="width: 8px; height: 8px; border-right: 2px solid #555; border-bottom: 2px solid #555; transform: rotate(45deg); transition: 0.3s; margin-top: -4px;"></div></div>
             <div class="select-options">
                 <div class="option-item" id="finish-action-text" onmouseover="playSnd('H')" onclick="handleFinishAction();">모든 짐 내려놓기</div>
                 <div class="option-item" onmouseover="playSnd('H')" onclick="resetApp();">새로운 시작</div>
@@ -157,35 +152,22 @@
     </div>
 
     <script>
-        // [수정] 효과음 재생 로직 (HTML5 Audio 사용)
         let currentAudio = null;
-        function playSnd(name) {
-            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-            currentAudio = new Audio(name + ".wav"); // 파일이 index.html과 같은 위치에 있어야 함
-            currentAudio.play().catch(e => console.log("오디오 재생 실패:", e));
+        /* [수정] 드롭다운 열 때 소리 뚝 끊김 방지 */
+        function playSnd(name, isDropdown = false) {
+            if (!isDropdown && currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+            let audio = new Audio(name + ".wav");
+            if (!isDropdown) currentAudio = audio;
+            audio.play().catch(e => {});
         }
-        function stopSnd() {
-            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-        }
+        function stopSnd() { if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; } }
 
-        // [변경] 로컬 스토리지 사용
         const STORAGE_KEY = 'start_go_data';
         let projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
         let currentIdx = 0;
         let isEndingAction = false;
 
-        window.onload = function() {
-            loadData();
-            renderAllCards();
-            updateViewport();
-            
-            // 효과음 객체가 종료되었을 때의 이벤트 감지 (엔딩 액션용)
-            if (currentAudio) {
-                currentAudio.onended = function() {
-                    if (isEndingAction) handleMainBtn();
-                };
-            }
-        };
+        window.onload = function() { loadData(); renderAllCards(); updateViewport(); };
 
         function saveData() {
             const cards = document.querySelectorAll('.project-card');
@@ -217,12 +199,7 @@
             projects.forEach((proj) => {
                 const card = document.createElement('div');
                 card.className = 'project-card';
-                card.innerHTML = `
-                    <div class="task-container">
-                        <div class="scroll-spacer"></div>
-                        <div class="task-list"></div>
-                        <div class="scroll-spacer" style="height: 100px;"></div>
-                    </div>`;
+                card.innerHTML = `<div class="task-container"><div class="scroll-spacer"></div><div class="task-list"></div><div class="scroll-spacer" style="height: 100px;"></div></div>`;
                 const list = card.querySelector('.task-list');
                 proj.tasks.forEach(t => list.appendChild(createTaskElement(t.val, t.isMain)));
                 viewport.appendChild(card);
@@ -271,13 +248,11 @@
             if (el.classList.contains('active')) return;
             playSnd('D'); el.classList.add('active');
             const currentWrapper = el.closest('.task-wrapper');
-            
             setTimeout(() => {
                 currentWrapper.classList.add('completed');
                 const card = currentWrapper.closest('.project-card');
                 const allRemaining = Array.from(card.querySelectorAll('.task-wrapper:not(.completed):not(.is-hidden)'));
                 const nextHero = allRemaining[allRemaining.length - 1];
-                
                 if (nextHero) {
                     nextHero.classList.remove('is-waiting');
                     nextHero.classList.add('is-hero');
@@ -286,8 +261,7 @@
                     updateStates(); 
                 } else {
                     playSnd('F'); 
-                    const actionBtn = document.getElementById('finish-action-text');
-                    actionBtn.innerText = projects.length > 1 ? "다른 짐 내려놓기" : "모든 짐 내려놓기";
+                    document.getElementById('finish-action-text').innerText = projects.length > 1 ? "다른 짐 내려놓기" : "모든 짐 내려놓기";
                     document.getElementById('finish-screen').style.display = 'flex';
                 }
                 saveData();
@@ -301,13 +275,6 @@
                 wrapper.classList.add('is-hero');
                 wrapper.querySelector('.task-input').readOnly = true;
                 btn.innerHTML = '<div class="pause-icon"><div></div><div></div></div>';
-                
-                const card = wrapper.closest('.project-card');
-                setTimeout(() => {
-                    const scrollTarget = wrapper.offsetTop - (window.innerHeight / 2) + 50; 
-                    card.scrollTo({ top: scrollTarget, behavior: 'smooth' });
-                }, 100);
-
                 updateStates();
             } else { stopHero(); }
         }
@@ -328,7 +295,6 @@
 
         function updateStates() {
             const currentCard = document.querySelectorAll('.project-card')[currentIdx];
-            if(!currentCard) return;
             const all = Array.from(currentCard.querySelectorAll('.task-wrapper:not(.completed)'));
             const hero = currentCard.querySelector('.is-hero');
             if(!hero) return;
@@ -339,34 +305,15 @@
             });
         }
 
-        function addTask(btn) {
-            playSnd('A');
-            const currentWrapper = btn.closest('.task-wrapper');
-            const list = currentWrapper.closest('.task-list');
-            const newTask = createTaskElement("이 사이에 들어갈 일은?", false);
-            list.insertBefore(newTask, currentWrapper.nextSibling);
-            saveData();
-        }
-
+        function addTask(btn) { playSnd('A'); const currentWrapper = btn.closest('.task-wrapper'); const list = currentWrapper.closest('.task-list'); const newTask = createTaskElement("이 사이에 들어갈 일은?", false); list.insertBefore(newTask, currentWrapper.nextSibling); saveData(); }
         function deleteTask(btn) { btn.closest('.task-wrapper').remove(); saveData(); }
-
-        function deleteCurrentProject() {
-            if (projects.length <= 1) return;
-            projects.splice(currentIdx, 1);
-            currentIdx = Math.max(0, currentIdx - 1);
-            renderAllCards(); 
-            updateViewport();
-            saveData();
-        }
+        function deleteCurrentProject() { if (projects.length <= 1) return; projects.splice(currentIdx, 1); currentIdx = Math.max(0, currentIdx - 1); renderAllCards(); updateViewport(); saveData(); }
 
         function handleFinishAction() {
             if (projects.length > 1) {
-                stopSnd();
                 projects.splice(currentIdx, 1);
                 currentIdx = 0;
-                stopHero();
-                renderAllCards();
-                updateViewport();
+                stopHero(); renderAllCards(); updateViewport();
                 document.getElementById('finish-screen').style.display = 'none';
                 saveData();
             } else {
@@ -374,13 +321,24 @@
                 document.getElementById('finish-screen').style.display = 'none';
                 document.getElementById('ending-overlay').style.display = 'flex';
                 setTimeout(() => { document.body.classList.add('empty-state'); }, 500);
-                projects = [];
-                localStorage.removeItem(STORAGE_KEY);
+                projects = []; localStorage.removeItem(STORAGE_KEY);
             }
         }
 
-        function handleMainBtn() { stopSnd(); location.reload(); }
-        function resetApp() { stopSnd(); localStorage.removeItem(STORAGE_KEY); location.reload(); }
+        /* [수정] 정지 버튼 클릭 시 초기화 기능 */
+        function handleMainBtn() { 
+            stopSnd();
+            isEndingAction = false;
+            document.getElementById('dropdown').classList.remove('open');
+            document.body.classList.remove('empty-state', 'has-hero');
+            document.getElementById('finish-screen').style.display = 'none';
+            document.getElementById('ending-overlay').style.display = 'none';
+            projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
+            currentIdx = 0;
+            renderAllCards(); updateViewport(); saveData();
+        }
+
+        function resetApp() { handleMainBtn(); }
         function toggleDropdown() { document.getElementById('dropdown').classList.toggle('open'); }
         function clearValue(el) { if (["너를 짓누르는 그 일을 적어봐", "이 사이에 들어갈 일은?"].includes(el.value)) el.value = ""; }
         function showNav(e) {
