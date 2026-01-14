@@ -2,7 +2,6 @@
 <html>
 <head>
     <style>
-        /* [기준 유지] 유빈이가 준 CSS 그대로 100% 유지 */
         :root {
             --bg-color: #f5f5f7; 
             --text-main: #3d444b; 
@@ -35,7 +34,7 @@
 
         .project-card { 
             min-width: 100%; height: 100vh; 
-            overflow-y: hidden;
+            overflow-y: hidden; 
             overflow-x: hidden; 
             display: flex; flex-direction: column; align-items: center; 
         }
@@ -55,12 +54,15 @@
         .trash-icon::before { content: ''; position: absolute; top: -3.5px; left: -3px; width: 16px; height: 1.5px; background: #888; border-radius: 1px; transition: 0.2s; }
 
         body.has-hero .nav-bar { display: none; }
+        
+        /* [수정] 상단 메뉴 버튼 위치 교체 */
         .top-menu { position: fixed; top: 20px; right: 25px; display: flex; gap: 12px; z-index: 9900; } 
         .menu-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; }
         .stop-icon { width: 9px; height: 9px; background: #333; border-radius: 1px; }
 
         .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; box-sizing: border-box; } 
         .scroll-spacer { height: 190px; width: 100%; flex-shrink: 0; }
+
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
         .task-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s ease; }
         .task-wrapper.completed { display: none !important; }
@@ -68,20 +70,25 @@
         .task-wrapper.is-waiting { opacity: 0.2; pointer-events: none; }
 
         .input-group { position: relative; display: flex; align-items: center; width: 100%; justify-content: center; }
-        .input-container { position: relative; display: flex; align-items: center; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); width: 180px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); justify-content: center; z-index: 1; }
-
-        .input-group:hover .input-container { transform: none; box-shadow: var(--nm-out); background: var(--bg-color); }
-        .input-container:has(.start-trigger:hover) { transform: scale(1.03); box-shadow: 0 0 18px rgba(74, 126, 179, 0.1), var(--nm-out); background: #ffffff; }
+        .input-container { 
+            position: relative; display: flex; align-items: center; 
+            background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); 
+            width: 180px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            justify-content: center; z-index: 1; 
+        }
 
         .task-input { background: transparent; border: none; padding: 14px 0; font-size: 12px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
         
         .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
+        
+        /* [수정] 시작 버튼 왼쪽 유지 */
         .start-trigger { left: 8px; opacity: 0; }
         .delete-trigger { right: 8px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
 
         .input-group:hover .start-trigger { opacity: 0.8; }
         .task-wrapper:not(.main-task):not(.is-hero) .input-group:hover .delete-trigger { opacity: 0.8; pointer-events: auto; }
 
+        /* [수정] 토글 버튼 오른쪽 배치 */
         .inner-toggle { position: absolute; right: 8px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
         .is-hero .inner-toggle { width: 36px; opacity: 1; }
         
@@ -92,6 +99,7 @@
 
         .is-hero .input-container { width: 220px; transform: scale(1.05) !important; background: #ffffff; }
         .is-hero .start-trigger { opacity: 1 !important; color: #5dade2; }
+        .is-hero .delete-trigger { display: none; } /* 히로 상태에선 X버튼 가림 */
 
         .bridge-zone { height: 40px; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
         body.has-hero .bridge-zone { opacity: 0; height: 0; overflow: hidden; }
@@ -99,30 +107,26 @@
         .task-list .task-wrapper:last-child .bridge-line { display: none; }
 
         .bridge-add-btn { position: absolute; width: 20px; height: 20px; background: var(--bg-color); border: none; border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; z-index: 5; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; opacity: 0; line-height: 1; padding-right: 1px; padding-bottom: 2px; }
-        .bridge-add-btn:hover { box-shadow: var(--nm-btn-hover); transform: scale(1.1); }
         .bridge-zone:hover .bridge-add-btn { opacity: 1 !important; }
 
         .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
         .pause-icon { display: flex; gap: 3.5px; } .pause-icon div { width: 2.5px; height: 10px; background: #333; }
 
         #finish-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
-        .select-main { width: 200px; padding: 14px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; }
+        .select-main { width: 200px; padding: 14px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-main); box-sizing: border-box; }
         .dropdown-container { position: relative; width: 200px; }
         .select-options { position: absolute; top: 58px; left: 0; width: 100%; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); display: none; flex-direction: column; z-index: 8001; padding: 6px 0; }
         .dropdown-container.open .select-options { display: flex; }
         .option-item { padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; }
         .option-item:hover { background: #e8e8ea; color: var(--point-blue); }
 
-        #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: none; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); }
+        #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); }
         .plane-icon { width: 60px; height: 60px; fill: #444; opacity: 0.7; animation: plane-fly 4s ease-in-out infinite; }
         .cloud-icon { width: 100px; fill: #ffffff; opacity: 0.5; position: absolute; animation: cloud-move 15s linear infinite; }
         @keyframes plane-fly { 0%, 100% { transform: translate(0, 0) rotate(5deg); } 50% { transform: translate(15px, -20px) rotate(-5deg); } }
         @keyframes cloud-move { from { transform: translateX(200vw); } to { transform: translateX(-100vw); } }
         
-        body.empty-state #project-viewport, 
-        body.empty-state .nav-bar, 
-        body.empty-state #finish-screen { display: none !important; }
-        body.empty-state .top-menu { display: flex !important; }
+        body.empty-state #project-viewport, body.empty-state .nav-bar, body.empty-state #finish-screen { display: none !important; }
     </style>
 </head>
 <body id="main-body" onmousemove="showNav(event)">
@@ -164,37 +168,12 @@
     </div>
 
     <script>
-        // [수정] 단독 앱에서도 소리가 나도록 매핑 주소 추가
-        const soundUrls = {
-            'A': 'sounds/A.mp3', 'B': 'sounds/B.mp3', 'C': 'sounds/C.mp3', 'D': 'sounds/D.mp3',
-            'E': 'sounds/E.mp3', 'F': 'sounds/F.mp3', 'G': 'sounds/G.mp3', 'H': 'sounds/H.mp3'
-        };
-
-        // [수정] 기준 playSnd 기능을 유지하면서 단독 앱용 Audio 재생 추가
-        function playSnd(name) { 
-            // ZEP용
-            window.parent.postMessage({ type: 'playSound', file: name }, '*'); 
-            // 단독 앱용 (GitHub Pages 상대 경로 기준)
-            const audio = new Audio(soundUrls[name]);
-            audio.play().catch(e => console.log("Sound play waiting for interaction"));
-        }
-
-        function stopSnd() { 
-            window.parent.postMessage({ type: 'stopSound' }, '*'); 
-        }
-
-        // [수정] exitApp 함수에 단독 앱 종료 기능 추가
-        function exitApp() { 
-            saveData(true); 
-            stopSnd(); 
-            window.parent.postMessage({ type: 'close' }, '*'); // ZEP용
-            window.close(); // 단독 앱/브라우저 종료용
-        }
-
-        // --- 이하 유빈이가 준 기준 코드 로직과 100% 동일 (변경 없음) ---
         let projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
         let currentIdx = 0;
         let isEndingAction = false;
+
+        function playSnd(name) { window.parent.postMessage({ type: 'playSound', file: name }, '*'); }
+        function stopSnd() { window.parent.postMessage({ type: 'stopSound' }, '*'); }
 
         window.onload = function() { window.parent.postMessage({ type: 'ready' }, '*'); };
 
@@ -207,20 +186,12 @@
                 document.getElementById('finish-screen').style.display = 'none';
                 document.getElementById('project-viewport').style.display = 'flex';
                 document.querySelector('.nav-bar').style.display = 'flex';
-                document.getElementById('dropdown').classList.remove('open');
                 if (e.data.data.projects && e.data.data.projects.length > 0) {
                     projects = e.data.data.projects;
                     currentIdx = e.data.data.currentIdx || 0;
-                    if (projects[currentIdx] && projects[currentIdx].tasks.length === 0) {
-                        if (projects.length > 1) {
-                            projects.splice(currentIdx, 1);
-                            currentIdx = Math.max(0, currentIdx - 1);
-                        } else {
-                            projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
-                        }
-                    }
-                    if (currentIdx >= projects.length) currentIdx = 0; 
-                    renderAllCards(); updateViewport(); stopHero(true); 
+                    renderAllCards();
+                    updateViewport();
+                    stopHero(true); 
                 } else { handleMainBtn(); }
             }
         });
@@ -311,11 +282,14 @@
             if (el.classList.contains('active')) return;
             playSnd('D'); el.classList.add('active');
             const currentWrapper = el.closest('.task-wrapper');
+            
+            // [수정] 애니메이션을 위해 0.3초 대기 후 차분하게 처리
             setTimeout(() => {
                 currentWrapper.classList.add('completed');
                 const card = currentWrapper.closest('.project-card');
                 const allRemaining = Array.from(card.querySelectorAll('.task-wrapper:not(.completed):not(.is-hidden)'));
                 const nextHero = allRemaining[allRemaining.length - 1];
+                
                 if (nextHero) {
                     nextHero.classList.remove('is-waiting');
                     nextHero.classList.add('is-hero');
@@ -324,9 +298,7 @@
                     updateStates(); 
                 } else {
                     playSnd('F'); 
-                    const actionBtn = document.getElementById('finish-action-text');
-                    actionBtn.innerText = projects.length > 1 ? "다른 짐 내려놓기" : "모든 짐 내려놓기";
-                    document.getElementById('dropdown').classList.remove('open');
+                    document.getElementById('finish-action-text').innerText = projects.length > 1 ? "다른 짐 내려놓기" : "모든 짐 내려놓기";
                     document.getElementById('finish-screen').style.display = 'flex';
                 }
                 saveData(true);
@@ -336,9 +308,10 @@
         function handleFinishAction() {
             saveData(true);
             if (projects.length > 1) {
-                stopSnd(); projects.splice(currentIdx, 1); currentIdx = 0; stopHero(true);
-                renderAllCards(); updateViewport(); document.getElementById('finish-screen').style.display = 'none';
-                saveData(true);
+                stopSnd(); projects.splice(currentIdx, 1);
+                currentIdx = 0; stopHero(true);
+                renderAllCards(); updateViewport();
+                document.getElementById('finish-screen').style.display = 'none';
             } else {
                 isEndingAction = true;
                 document.getElementById('finish-screen').style.display = 'none';
@@ -419,6 +392,7 @@
             currentIdx = 0; renderAllCards(); updateViewport(); saveData(true);
         }
 
+        function exitApp() { saveData(true); stopSnd(); window.parent.postMessage({ type: 'close' }, '*'); }
         function toggleDropdown() { document.getElementById('dropdown').classList.toggle('open'); }
         function resetApp() { stopSnd(); handleMainBtn(); }
     </script>
