@@ -15,10 +15,9 @@
             --nm-btn-hover: 4px 4px 10px #c8c8cf, -3px -3px 8px #ffffff;
         }
 
-        /* [수정 1] 엔딩 화면(empty-state)일 때는 스크롤 자체를 막아서 회색 줄 원천 차단 */
-        * { scrollbar-gutter: stable; }
-        body.empty-state { overflow: hidden !important; }
-        body.empty-state * { scrollbar-gutter: auto; }
+        /* [수정 2] 회색 줄 박멸을 위해 html 태그까지 초기화 */
+        html, body { scrollbar-gutter: auto; } 
+        body.empty-state { overflow: hidden !important; scrollbar-gutter: auto !important; }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -38,6 +37,7 @@
 
         #project-viewport { 
             display: flex; width: 100%; height: 100vh; transition: transform 0s; align-items: flex-start; 
+            scrollbar-gutter: stable; /* 프로젝트 화면에서만 스크롤 공간 확보 */
         }
         #project-viewport.ready { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
@@ -66,8 +66,8 @@
         .scroll-spacer { height: 190px; width: 100%; flex-shrink: 0; }
 
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
+        /* [수정 1] + 버튼 강제 표시 코드 삭제함 (이제 기본 호버 동작 따름) */
         .task-list .task-wrapper:last-child .bridge-line { display: none; }
-        .task-list .task-wrapper:last-child .bridge-add-btn { opacity: 1 !important; }
 
         .task-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s ease; }
         .task-wrapper.completed { display: none !important; }
@@ -75,7 +75,6 @@
         .task-wrapper.is-waiting { opacity: 0.2; pointer-events: none; }
 
         .input-group { position: relative; display: flex; align-items: center; width: 100%; justify-content: center; }
-        /* [수정 4] 플레이 버튼 호버 시 컨테이너 확장 애니메이션 복구 */
         .input-container { position: relative; display: flex; align-items: center; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); width: 180px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); justify-content: center; z-index: 1; }
         .input-container:has(.start-trigger:hover) { transform: scale(1.03); box-shadow: 0 0 18px rgba(74, 126, 179, 0.1), var(--nm-out); background: #ffffff; }
 
@@ -103,7 +102,6 @@
         body.has-hero .bridge-zone { opacity: 0; height: 0; overflow: hidden; }
         .bridge-line { width: 1.5px; height: 14px; background: var(--line-color); opacity: 0.15; }
         
-        /* [수정 2] + 버튼 정렬 수정: 패딩 제거하고 line-height로 수직 중앙 정렬 맞춤 */
         .bridge-add-btn { 
             position: absolute; width: 20px; height: 20px; 
             background: var(--bg-color); border: none; border-radius: 50%; 
@@ -111,7 +109,7 @@
             z-index: 5; transition: 0.2s; 
             display: flex; align-items: center; justify-content: center; 
             font-size: 16px; font-weight: 800; opacity: 0; 
-            line-height: 1; padding: 0; padding-bottom: 2px; /* 살짝 들어올림 */
+            line-height: 1; padding: 0; padding-bottom: 2px;
             -webkit-app-region: no-drag; 
         }
         .bridge-add-btn:hover { box-shadow: var(--nm-btn-hover); transform: scale(1.1); }
@@ -120,12 +118,12 @@
         .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
         .pause-icon { display: flex; gap: 3.5px; } .pause-icon div { width: 2.5px; height: 10px; background: #333; }
 
-        /* [수정 3] 엔딩 화면 위치 1cm 하향 조정 (padding-bottom을 0으로 설정하여 정중앙 배치) */
+        /* [수정 3] padding-top을 추가하여 컨텐츠를 물리적으로 아래(남쪽)로 밀어버림 */
         #finish-screen { 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; 
             flex-direction: column; align-items: center; justify-content: center; 
             background: var(--bg-color); z-index: 8000; 
-            padding-bottom: 0; /* 기존 50px에서 0으로 변경하여 아래로 내림 */
+            padding-top: 130px; /* 위쪽 여백을 줘서 아래로 내림 */
             box-sizing: border-box; 
         }
         
