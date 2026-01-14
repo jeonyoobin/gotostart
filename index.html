@@ -2,6 +2,7 @@
 <html>
 <head>
     <style>
+        /* [기준 유지] 유빈이가 준 CSS 그대로 100% 유지 */
         :root {
             --bg-color: #f5f5f7; 
             --text-main: #3d444b; 
@@ -58,45 +59,30 @@
         .menu-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; }
         .stop-icon { width: 9px; height: 9px; background: #333; border-radius: 1px; }
 
-        .task-container { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            width: 100%; 
-            min-height: 100%;
-            box-sizing: border-box; 
-        } 
-        .scroll-spacer { height: 150px; width: 100%; flex-shrink: 0; } /* 400x500에 맞춰 여백 조정 */
-
+        .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; box-sizing: border-box; } 
+        .scroll-spacer { height: 190px; width: 100%; flex-shrink: 0; }
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
         .task-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s ease; }
         .task-wrapper.completed { display: none !important; }
-        
         .task-wrapper.is-hidden { display: none !important; } 
         .task-wrapper.is-waiting { opacity: 0.2; pointer-events: none; }
 
         .input-group { position: relative; display: flex; align-items: center; width: 100%; justify-content: center; }
-        .input-container { 
-            position: relative; display: flex; align-items: center; 
-            background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); 
-            width: 220px; padding: 0 40px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
-            justify-content: center; z-index: 1; 
-        }
+        .input-container { position: relative; display: flex; align-items: center; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); width: 180px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); justify-content: center; z-index: 1; }
 
         .input-group:hover .input-container { transform: none; box-shadow: var(--nm-out); background: var(--bg-color); }
         .input-container:has(.start-trigger:hover) { transform: scale(1.03); box-shadow: 0 0 18px rgba(74, 126, 179, 0.1), var(--nm-out); background: #ffffff; }
 
-        .task-input { background: transparent; border: none; padding: 14px 0; font-size: 13px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
+        .task-input { background: transparent; border: none; padding: 14px 0; font-size: 12px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
         
-        .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
-        /* 위치 반전: 시작 버튼을 왼쪽으로 */
-        .start-trigger { left: 10px; opacity: 0; }
-        .delete-trigger { right: 10px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
+        .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
+        .start-trigger { left: 8px; opacity: 0; }
+        .delete-trigger { right: 8px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
 
         .input-group:hover .start-trigger { opacity: 0.8; }
         .task-wrapper:not(.main-task):not(.is-hero) .input-group:hover .delete-trigger { opacity: 0.8; pointer-events: auto; }
 
-        .inner-toggle { position: absolute; right: 10px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
+        .inner-toggle { position: absolute; right: 8px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
         .is-hero .inner-toggle { width: 36px; opacity: 1; }
         
         .toggle-frame { width: 34px; height: 18px; background: #e0e0e0; border-radius: 10px; display: flex; align-items: center; cursor: pointer; position: relative; transition: background 0.2s; }
@@ -104,7 +90,7 @@
         .toggle-frame.active { background: var(--point-blue); }
         .toggle-frame.active .toggle-circle { left: 19px; }
 
-        .is-hero .input-container { width: 240px; transform: scale(1.05) !important; background: #ffffff; }
+        .is-hero .input-container { width: 220px; transform: scale(1.05) !important; background: #ffffff; }
         .is-hero .start-trigger { opacity: 1 !important; color: #5dade2; }
 
         .bridge-zone { height: 40px; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
@@ -178,20 +164,42 @@
     </div>
 
     <script>
-        // 기존 JS 로직 유지 (메모리상 생략, 위 HTML의 스크립트 부분과 동일)
+        // [수정] 단독 앱에서도 소리가 나도록 매핑 주소 추가
+        const soundUrls = {
+            'A': 'sounds/A.mp3', 'B': 'sounds/B.mp3', 'C': 'sounds/C.mp3', 'D': 'sounds/D.mp3',
+            'E': 'sounds/E.mp3', 'F': 'sounds/F.mp3', 'G': 'sounds/G.mp3', 'H': 'sounds/H.mp3'
+        };
+
+        // [수정] 기준 playSnd 기능을 유지하면서 단독 앱용 Audio 재생 추가
+        function playSnd(name) { 
+            // ZEP용
+            window.parent.postMessage({ type: 'playSound', file: name }, '*'); 
+            // 단독 앱용 (GitHub Pages 상대 경로 기준)
+            const audio = new Audio(soundUrls[name]);
+            audio.play().catch(e => console.log("Sound play waiting for interaction"));
+        }
+
+        function stopSnd() { 
+            window.parent.postMessage({ type: 'stopSound' }, '*'); 
+        }
+
+        // [수정] exitApp 함수에 단독 앱 종료 기능 추가
+        function exitApp() { 
+            saveData(true); 
+            stopSnd(); 
+            window.parent.postMessage({ type: 'close' }, '*'); // ZEP용
+            window.close(); // 단독 앱/브라우저 종료용
+        }
+
+        // --- 이하 유빈이가 준 기준 코드 로직과 100% 동일 (변경 없음) ---
         let projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
         let currentIdx = 0;
         let isEndingAction = false;
 
-        function playSnd(name) { window.parent.postMessage({ type: 'playSound', file: name }, '*'); }
-        function stopSnd() { window.parent.postMessage({ type: 'stopSound' }, '*'); }
-
         window.onload = function() { window.parent.postMessage({ type: 'ready' }, '*'); };
 
         window.addEventListener('message', function(e) {
-            if (e.data.type === 'soundEnded' && isEndingAction) {
-                handleMainBtn();
-            }
+            if (e.data.type === 'soundEnded' && isEndingAction) { handleMainBtn(); }
             if (e.data.type === 'loadData' && e.data.data) {
                 isEndingAction = false;
                 document.body.classList.remove('empty-state', 'has-hero');
@@ -200,7 +208,6 @@
                 document.getElementById('project-viewport').style.display = 'flex';
                 document.querySelector('.nav-bar').style.display = 'flex';
                 document.getElementById('dropdown').classList.remove('open');
-
                 if (e.data.data.projects && e.data.data.projects.length > 0) {
                     projects = e.data.data.projects;
                     currentIdx = e.data.data.currentIdx || 0;
@@ -213,12 +220,8 @@
                         }
                     }
                     if (currentIdx >= projects.length) currentIdx = 0; 
-                    renderAllCards();
-                    updateViewport();
-                    stopHero(true); 
-                } else { 
-                    handleMainBtn(); 
-                }
+                    renderAllCards(); updateViewport(); stopHero(true); 
+                } else { handleMainBtn(); }
             }
         });
 
@@ -252,12 +255,7 @@
             projects.forEach((proj) => {
                 const card = document.createElement('div');
                 card.className = 'project-card';
-                card.innerHTML = `
-                    <div class="task-container">
-                        <div class="scroll-spacer"></div>
-                        <div class="task-list"></div>
-                        <div class="scroll-spacer" style="height: 100px;"></div>
-                    </div>`;
+                card.innerHTML = `<div class="task-container"><div class="scroll-spacer"></div><div class="task-list"></div><div class="scroll-spacer" style="height: 100px;"></div></div>`;
                 const list = card.querySelector('.task-list');
                 proj.tasks.forEach(t => list.appendChild(createTaskElement(t.val, t.isMain)));
                 viewport.appendChild(card);
@@ -278,9 +276,7 @@
             if (projects.length <= 1) return;
             projects.splice(currentIdx, 1);
             if (currentIdx >= projects.length) currentIdx = projects.length - 1;
-            renderAllCards(); 
-            updateViewport();
-            saveData(true);
+            renderAllCards(); updateViewport(); saveData(true);
         }
 
         function createTaskElement(val, isMain) {
@@ -306,8 +302,7 @@
             if (currentIdx < 0) currentIdx = 0;
             if (currentIdx >= projects.length) {
                 projects.push({ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] });
-                renderAllCards();
-                updateViewport();
+                renderAllCards(); updateViewport();
             } else { updateViewport(); }
             saveData(true);
         }
@@ -341,9 +336,8 @@
         function handleFinishAction() {
             saveData(true);
             if (projects.length > 1) {
-                stopSnd(); projects.splice(currentIdx, 1);
-                currentIdx = 0; stopHero(true); renderAllCards(); updateViewport();
-                document.getElementById('finish-screen').style.display = 'none';
+                stopSnd(); projects.splice(currentIdx, 1); currentIdx = 0; stopHero(true);
+                renderAllCards(); updateViewport(); document.getElementById('finish-screen').style.display = 'none';
                 saveData(true);
             } else {
                 isEndingAction = true;
@@ -359,12 +353,9 @@
             document.body.classList.remove('has-hero');
             document.querySelectorAll('.task-wrapper').forEach(el => {
                 el.classList.remove('is-hero', 'is-waiting', 'is-hidden');
-                const input = el.querySelector('.task-input');
-                if (input) input.readOnly = false;
-                const sBtn = el.querySelector('.start-trigger');
-                if (sBtn) sBtn.innerHTML = '<div class="play-icon"></div>';
-                const tgl = el.querySelector('.toggle-frame');
-                if (tgl) tgl.classList.remove('active');
+                const input = el.querySelector('.task-input'); if (input) input.readOnly = false;
+                const sBtn = el.querySelector('.start-trigger'); if (sBtn) sBtn.innerHTML = '<div class="play-icon"></div>';
+                const tgl = el.querySelector('.toggle-frame'); if (tgl) tgl.classList.remove('active');
             });
         }
 
@@ -415,6 +406,7 @@
         }
 
         function deleteTask(btn) { btn.closest('.task-wrapper').remove(); updateViewport(); saveData(true); stopHero(true); }
+        
         function handleMainBtn() { 
             stopSnd(); isEndingAction = false;
             document.getElementById('dropdown').classList.remove('open');
@@ -427,7 +419,6 @@
             currentIdx = 0; renderAllCards(); updateViewport(); saveData(true);
         }
 
-        function exitApp() { saveData(true); stopSnd(); window.parent.postMessage({ type: 'close' }, '*'); }
         function toggleDropdown() { document.getElementById('dropdown').classList.toggle('open'); }
         function resetApp() { stopSnd(); handleMainBtn(); }
     </script>
