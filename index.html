@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GoToStart</title>
     <style>
+        /* 유빈이가 제공한 CSS 스타일 그대로 유지 */
         :root {
             --bg-color: #f5f5f7; 
             --text-main: #3d444b; 
@@ -16,324 +16,404 @@
             --nm-btn-hover: 4px 4px 10px #c8c8cf, -3px -3px 8px #ffffff;
         }
 
-        * { scrollbar-gutter: stable; box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 6px; }
+        /* 윈도우 앱 드래그를 위한 투명 상단 바 */
+        .drag-region {
+            position: fixed; top: 0; left: 0; width: 100%; height: 40px;
+            -webkit-app-region: drag; z-index: 99999; pointer-events: none;
+        }
+        .top-menu .menu-btn { -webkit-app-region: no-drag; pointer-events: auto; }
+
+        * { scrollbar-gutter: stable; }
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; border: 2px solid var(--bg-color); }
 
         body { 
-            background: var(--bg-color); color: var(--text-main); 
-            font-family: 'Inter', 'Pretendard', sans-serif; 
+            background: var(--bg-color); color: var(--text-main); font-family: 'Inter', 'Pretendard', sans-serif; 
             margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden;
             -webkit-user-select: none; user-select: none;
+            transition: none; 
         }
 
-        /* 드래그 가능한 상단 영역 (Nativefier용) */
-        #title-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 30px;
-            -webkit-app-region: drag; z-index: 9999;
-        }
+        #project-viewport { display: flex; width: 100%; height: 100vh; transition: transform 0s; align-items: flex-start; }
+        #project-viewport.ready { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
-        #project-viewport { 
-            display: flex; width: 100%; height: 100vh; 
-            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); 
-        }
+        .project-card { min-width: 100%; height: 100vh; overflow-y: hidden; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; }
+        #project-viewport.ready .project-card { overflow-y: auto; }
 
-        .project-card { 
-            min-width: 100%; height: 100vh; 
-            overflow-y: auto; overflow-x: hidden; 
-            display: flex; flex-direction: column; align-items: center; 
-        }
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; pointer-events: none; z-index: 9999; display: flex; justify-content: center; align-items: center; background: linear-gradient(to top, var(--bg-color) 60%, transparent); }
+        .nav-btn { position: absolute; bottom: 30px; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #555; opacity: 0; transition: 0.2s; pointer-events: auto; }
+        .nav-left { left: 25px; } .nav-right { right: 25px; }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 100px; pointer-events: none; z-index: 9000; display: flex; justify-content: center; align-items: center; background: linear-gradient(to top, var(--bg-color) 40%, transparent); }
-        .nav-btn { position: absolute; bottom: 25px; width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: #555; opacity: 0; transition: 0.3s; pointer-events: auto; }
-        .nav-left { left: 20px; } .nav-right { right: 20px; }
+        .page-indicator { position: absolute; bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 0; opacity: 0; transition: 0.2s; pointer-events: none; }
+        .page-text { font-size: 11px; font-weight: 700; color: #777; letter-spacing: 1px; line-height: 1; margin-bottom: 4px; }
 
-        .page-indicator { position: absolute; bottom: 30px; display: flex; flex-direction: column; align-items: center; opacity: 0; transition: 0.3s; }
-        .page-text { font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px; }
+        .trash-btn { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; transition: 0.2s; }
+        body.single-project .trash-btn { display: none !important; }
+        
+        .trash-icon { width: 10px; height: 12px; border: 1.5px solid #888; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; position: relative; transition: 0.2s; }
+        .trash-icon::before { content: ''; position: absolute; top: -3.5px; left: -3px; width: 16px; height: 1.5px; background: #888; border-radius: 1px; transition: 0.2s; }
 
-        .top-menu { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 9900; -webkit-app-region: no-drag; } 
-        .menu-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; font-size: 14px; }
-        .stop-icon { width: 8px; height: 8px; background: #555; border-radius: 1px; }
+        body.has-hero .nav-bar { display: none; }
+        .top-menu { position: fixed; top: 20px; right: 25px; display: flex; gap: 12px; z-index: 9900; } 
+        .menu-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; }
+        .stop-icon { width: 9px; height: 9px; background: #333; border-radius: 1px; }
 
-        .task-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; padding-bottom: 120px; }
-        .scroll-spacer { height: 150px; flex-shrink: 0; }
+        .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; box-sizing: border-box; } 
+        .scroll-spacer { height: 190px; width: 100%; flex-shrink: 0; }
 
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
-        .task-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; transition: 0.4s ease; }
-        .task-wrapper.completed { opacity: 0; height: 0; overflow: hidden; margin: 0; }
-        .task-wrapper.is-hidden { display: none; }
-        .task-wrapper.is-waiting { opacity: 0.3; pointer-events: none; transform: scale(0.95); }
+        .task-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s ease; }
+        .task-wrapper.completed { display: none !important; }
+        .task-wrapper.is-waiting { opacity: 0.2; pointer-events: none; }
 
-        .input-group { width: 100%; display: flex; justify-content: center; padding: 10px 0; }
+        .input-group { position: relative; display: flex; align-items: center; width: 100%; justify-content: center; }
         .input-container { 
             position: relative; display: flex; align-items: center; 
             background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); 
-            width: 85%; max-width: 280px; padding: 0 40px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 180px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            justify-content: center; z-index: 1; 
         }
 
-        .task-input { background: transparent; border: none; padding: 15px 0; font-size: 13px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; }
+        .input-container:has(.start-trigger:hover) { transform: scale(1.03); box-shadow: 0 0 18px rgba(74, 126, 179, 0.1), var(--nm-out); background: #ffffff; }
+        .task-input { background: transparent; border: none; padding: 14px 0; font-size: 12px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
         
-        .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; opacity: 0; }
-        .start-trigger { left: 8px; color: var(--point-blue); }
-        .delete-trigger { right: 8px; color: #ff8a8a; font-size: 12px; }
+        .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
+        .start-trigger { left: 8px; opacity: 0; }
+        .delete-trigger { right: 8px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
 
-        .input-container:hover .btn-icon { opacity: 1; }
-        .is-hero .input-container { transform: scale(1.05); background: #ffffff; width: 90%; }
-        .is-hero .start-trigger { opacity: 1 !important; }
+        .input-group:hover .start-trigger { opacity: 0.8; }
+        .task-wrapper:not(.main-task):not(.is-hero) .input-group:hover .delete-trigger { opacity: 0.8; pointer-events: auto; }
 
-        .inner-toggle { position: absolute; right: 8px; display: none; }
-        .is-hero .inner-toggle { display: flex; }
-        .is-hero .delete-trigger { display: none; }
-
-        .toggle-frame { width: 34px; height: 18px; background: #e0e0e0; border-radius: 10px; position: relative; cursor: pointer; transition: 0.3s; }
-        .toggle-circle { width: 12px; height: 12px; background: #fff; border-radius: 50%; position: absolute; left: 3px; top: 3px; transition: 0.3s; }
+        .inner-toggle { position: absolute; right: 8px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
+        .is-hero .inner-toggle { width: 36px; opacity: 1; }
+        
+        .toggle-frame { width: 34px; height: 18px; background: #e0e0e0; border-radius: 10px; display: flex; align-items: center; cursor: pointer; position: relative; transition: background 0.2s; }
+        .toggle-circle { width: 12px; height: 12px; background: #fff; border-radius: 50%; position: absolute; left: 3px; transition: 0.2s; }
         .toggle-frame.active { background: var(--point-blue); }
         .toggle-frame.active .toggle-circle { left: 19px; }
 
+        .is-hero .input-container { width: 220px; transform: scale(1.05) !important; background: #ffffff; }
+        .is-hero .start-trigger { opacity: 1 !important; color: #5dade2; }
+
         .bridge-zone { height: 40px; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
-        .bridge-line { width: 1.5px; height: 100%; background: var(--line-color); opacity: 0.1; }
-        .bridge-add-btn { position: absolute; width: 22px; height: 22px; background: var(--bg-color); border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; opacity: 0; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; }
-        .bridge-zone:hover .bridge-add-btn { opacity: 1; }
+        body.has-hero .bridge-zone { opacity: 0; height: 0; overflow: hidden; }
+        .bridge-line { width: 1.5px; height: 14px; background: var(--line-color); opacity: 0.15; }
+        .task-list .task-wrapper:last-child .bridge-line { display: none; }
 
-        .play-icon { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid #555; margin-left: 2px; }
-        .pause-icon { display: flex; gap: 3px; } .pause-icon div { width: 3px; height: 10px; background: #555; }
+        .bridge-add-btn { position: absolute; width: 20px; height: 20px; background: var(--bg-color); border: none; border-radius: 50%; color: var(--point-blue); box-shadow: var(--nm-btn); cursor: pointer; z-index: 5; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; opacity: 0; line-height: 1; padding-right: 1px; padding-bottom: 2px; }
+        .bridge-zone:hover .bridge-add-btn { opacity: 1 !important; }
 
-        #finish-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
-        .select-main { width: 220px; padding: 15px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 13px; font-weight: 700; }
+        .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
+        .pause-icon { display: flex; gap: 3.5px; } .pause-icon div { width: 2.5px; height: 10px; background: #333; }
+
+        #finish-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
+        .select-main { width: 200px; padding: 14px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; }
+        .dropdown-container { position: relative; width: 200px; }
+        .select-options { position: absolute; top: 58px; left: 0; width: 100%; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); display: none; flex-direction: column; z-index: 8001; padding: 6px 0; }
+        .dropdown-container.open .select-options { display: flex; }
+        .option-item { padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; }
+        .option-item:hover { background: #e8e8ea; color: var(--point-blue); }
+
+        #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); }
+        .plane-icon { width: 60px; height: 60px; fill: #444; opacity: 0.7; animation: plane-fly 4s ease-in-out infinite; }
+        .cloud-icon { width: 100px; fill: #ffffff; opacity: 0.5; position: absolute; animation: cloud-move 15s linear infinite; }
+        @keyframes plane-fly { 0%, 100% { transform: translate(0, 0) rotate(5deg); } 50% { transform: translate(15px, -20px) rotate(-5deg); } }
+        @keyframes cloud-move { from { transform: translateX(200vw); } to { transform: translateX(-100vw); } }
         
-        #ending-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); }
-        .plane-icon { width: 60px; height: 60px; fill: #444; animation: plane-fly 4s ease-in-out infinite; }
-        @keyframes plane-fly { 0%, 100% { transform: translate(0,0) rotate(5deg); } 50% { transform: translate(15px,-20px) rotate(-5deg); } }
-
-        body.empty-state #project-viewport, body.empty-state .nav-bar { display: none !important; }
+        body.empty-state #project-viewport, body.empty-state .nav-bar, body.empty-state #finish-screen { display: none !important; }
+        body.empty-state .top-menu { display: flex !important; }
     </style>
 </head>
-<body onmousemove="handleNavVisibility(event)">
-    <div id="title-bar"></div>
+<body id="main-body" onmousemove="showNav(event)">
+
+    <div class="drag-region"></div>
 
     <div id="ending-overlay">
+        <svg class="cloud-icon" style="top: 20%; animation-delay: -2s;" viewBox="0 0 24 24"><path d="M17.5,19c-3,0-5.5-2.5-5.5-5.5c0-0.1,0-0.2,0-0.3c-0.5,0.2-1.1,0.3-1.7,0.3c-2.4,0-4.3-1.9-4.3-4.3c0-0.3,0-0.6,0.1-0.8 C4.2,9,2.5,10.8,2.5,13c0,3,2.5,5.5,5.5,5.5h9.5c2.2,0,4-1.8,4-4c0-2.2-1.8-4-4-4c-0.3,0-0.5,0-0.8,0.1c-0.2-2.7-2.5-4.8-5.2-4.8 c-1.6,0-3,0.7-3.9,1.8C8.1,7.2,8.5,7,9,7c2.8,0,5,2.2,5,5c0,0.3,0,0.5-0.1,0.8c1.3,0,2.4,0.7,3.1,1.8c0.2-0.1,0.3-0.1,0.5-0.1 c1.4,0,2.5,1.1,2.5,2.5S18.9,19.5,17.5,19z"/></svg>
         <svg class="plane-icon" viewBox="0 0 24 24"><path d="M21 3L3 10.53V11.5L9.84 13.67L12 20.33L13 21L21 3M19.34 5.34L11.5 13.18L10.32 9.68L19.34 5.34M13.18 11.5L14.32 18.68L18.66 9.66L13.18 11.5Z"/></svg>
-        <p style="margin-top:20px; color:#666; font-size:14px; font-weight:600;">모든 짐을 내려놓았습니다.</p>
     </div>
 
     <div class="top-menu">
-        <div class="menu-btn" onclick="playSound('H'); handleHome();"><div class="stop-icon"></div></div>
-        <div class="menu-btn" onclick="window.close();">✕</div>
+        <div class="menu-btn" onclick="playSnd('H'); handleMainBtn();"><div class="stop-icon"></div></div>
+        <div class="menu-btn" onclick="playSnd('H'); window.close();">✕</div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-btn nav-left" id="btn-left" onclick="playSound('H'); moveProject(-1)">❮</div>
+        <div class="nav-btn nav-left" id="btn-left" onclick="playSnd('H'); moveCard(-1)">❮</div>
         <div class="page-indicator" id="indicator">
             <div class="page-text" id="page-num">1 / 1</div>
-            <div class="menu-btn" style="margin-top:10px; width:24px; height:24px; font-size:10px;" onclick="deleteProject()">✕</div>
+            <div class="trash-container" style="position: absolute; top: 22px; display: flex; justify-content: center; width: 100%;">
+                <div class="trash-btn" id="project-trash" onclick="playSnd('H'); deleteCurrentProject();">
+                    <div class="trash-icon"></div>
+                </div>
+            </div>
         </div>
-        <div class="nav-btn nav-right" id="btn-right" onclick="playSound('H'); moveProject(1)">❯</div>
+        <div class="nav-btn nav-right" id="btn-right" onclick="playSnd('H'); moveCard(1)">❯</div>
     </div>
 
     <div id="project-viewport"></div>
 
     <div id="finish-screen">
-        <div class="select-main" onclick="completeProject()">
-            <span>이 프로젝트 완료하기</span>
-            <div class="play-icon" style="transform: rotate(-90deg);"></div>
+        <div class="dropdown-container" id="dropdown">
+            <div class="select-main" onclick="playSnd('G'); toggleDropdown();"><span>선택</span><div style="width: 8px; height: 8px; border-right: 2px solid #555; border-bottom: 2px solid #555; transform: rotate(45deg); transition: 0.3s; margin-top: -4px;"></div></div>
+            <div class="select-options">
+                <div class="option-item" id="finish-action-text" onmouseover="playSnd('H')" onclick="handleFinishAction();">모든 짐 내려놓기</div>
+                <div class="option-item" onmouseover="playSnd('H')" onclick="resetApp();">새로운 시작</div>
+            </div>
         </div>
-        <p onclick="handleHome()" style="margin-top:20px; font-size:12px; color:#999; cursor:pointer;">처음으로 돌아가기</p>
     </div>
 
     <script>
-        // --- 사운드 설정 (유빈이가 사용하는 파일명 기준) ---
-        const sounds = {};
-        ['A','B','C','D','E','F','G','H'].forEach(name => {
-            sounds[name] = new Audio(`https://raw.githubusercontent.com/jeonyoobin/gotostart/main/sounds/${name}.mp3`);
-        });
-        function playSound(name) { 
-            if(sounds[name]) {
-                sounds[name].currentTime = 0;
-                sounds[name].play().catch(() => {});
+        // --- 데이터 관리 (LocalStorage 기반) ---
+        let projects = [];
+        let currentIdx = 0;
+        let isEndingAction = false;
+        let currentAudio = null;
+
+        function loadStorage() {
+            const data = localStorage.getItem('gotostart_data');
+            if (data) {
+                const parsed = JSON.parse(data);
+                projects = parsed.projects;
+                currentIdx = parsed.currentIdx;
+            } else {
+                projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
+                currentIdx = 0;
+            }
+            renderAllCards();
+            updateViewport();
+        }
+
+        function saveData(isSilent = false) {
+            // 현재 화면의 인풋값들을 프로젝트 데이터에 반영
+            const cards = document.querySelectorAll('.project-card');
+            cards.forEach((card, idx) => {
+                if (projects[idx]) {
+                    const tasks = [];
+                    const wrappers = Array.from(card.querySelectorAll('.task-wrapper:not(.completed)'));
+                    wrappers.forEach(w => {
+                        tasks.push({ val: w.querySelector('.task-input').value, isMain: w.classList.contains('main-task') });
+                    });
+                    projects[idx].tasks = tasks;
+                }
+            });
+            localStorage.setItem('gotostart_data', JSON.stringify({ projects, currentIdx }));
+        }
+
+        // --- 사운드 재생 (HTML5 Audio) ---
+        function playSnd(name) {
+            stopSnd();
+            currentAudio = new Audio(`./${name}.wav`);
+            currentAudio.play().catch(e => console.log("Audio play blocked or missing file"));
+            
+            if (isEndingAction) {
+                currentAudio.onended = () => { handleMainBtn(); };
             }
         }
 
-        let projects = JSON.parse(localStorage.getItem('gtstart_data')) || [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
-        let currentIdx = 0;
-
-        function save() {
-            localStorage.setItem('gtstart_data', JSON.stringify(projects));
+        function stopSnd() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
         }
 
-        function render() {
-            const vp = document.getElementById('project-viewport');
-            vp.innerHTML = '';
-            projects.forEach((proj, pIdx) => {
+        // --- 유빈이가 제공한 로직 그대로 유지 ---
+        function showNav(e) {
+            const h = window.innerHeight;
+            const lb = document.getElementById('btn-left'), rb = document.getElementById('btn-right'), ind = document.getElementById('indicator');
+            if (e.clientY > h - 100 && projects.length > 0 && !document.body.classList.contains('empty-state')) { 
+                lb.style.opacity = "0.8"; rb.style.opacity = "0.8"; ind.style.opacity = "1";
+            } else { lb.style.opacity = "0"; rb.style.opacity = "0"; ind.style.opacity = "0"; }
+        }
+
+        function renderAllCards() {
+            const viewport = document.getElementById('project-viewport');
+            viewport.innerHTML = '';
+            projects.forEach((proj) => {
                 const card = document.createElement('div');
                 card.className = 'project-card';
                 card.innerHTML = `
                     <div class="task-container">
                         <div class="scroll-spacer"></div>
                         <div class="task-list"></div>
+                        <div class="scroll-spacer" style="height: 100px;"></div>
                     </div>`;
                 const list = card.querySelector('.task-list');
-                proj.tasks.forEach((t, tIdx) => {
-                    list.appendChild(createTaskEl(t.val, t.isMain));
-                });
-                vp.appendChild(card);
+                proj.tasks.forEach(t => list.appendChild(createTaskElement(t.val, t.isMain)));
+                viewport.appendChild(card);
             });
-            updateView();
         }
 
-        function createTaskEl(val, isMain) {
+        function updateViewport() {
+            const viewport = document.getElementById('project-viewport');
+            viewport.classList.remove('ready');
+            viewport.style.transform = `translateX(-${currentIdx * 100}%)`;
+            document.getElementById('page-num').innerText = `${currentIdx + 1} / ${projects.length}`;
+            document.body.classList.toggle('single-project', projects.length <= 1);
+            setTimeout(() => { viewport.classList.add('ready'); }, 500);
+        }
+
+        function deleteCurrentProject() {
+            if (projects.length <= 1) return;
+            projects.splice(currentIdx, 1);
+            if (currentIdx >= projects.length) currentIdx = projects.length - 1;
+            renderAllCards(); updateViewport(); saveData(true);
+        }
+
+        function createTaskElement(val, isMain) {
             const wrapper = document.createElement('div');
             wrapper.className = `task-wrapper ${isMain ? 'main-task' : ''}`;
             wrapper.innerHTML = `
                 <div class="bridge-zone"><div class="bridge-line"></div><div class="bridge-add-btn" onclick="addTask(this)">+</div></div>
                 <div class="input-group">
                     <div class="input-container">
-                        <div class="btn-icon start-trigger" onclick="toggleFocus(this)"><div class="play-icon"></div></div>
-                        <input type="text" class="task-input" value="${val}" onfocus="if(this.value.includes('?'))this.value=''" onchange="updateData()">
-                        <div class="inner-toggle"><div class="toggle-frame" onclick="doToggle(this)"><div class="toggle-circle"></div></div></div>
-                        <div class="btn-icon delete-trigger" onclick="deleteTask(this)">✕</div>
+                        <div class="btn-icon start-trigger" onclick="toggleHero(this)"><div class="play-icon"></div></div>
+                        <input type="text" class="task-input" value="${val}" onfocus="clearValue(this)" spellcheck="false">
+                        <div class="inner-toggle"><div class="toggle-frame" onclick="handleToggle(this)"><div class="toggle-circle"></div></div></div>
+                        <div class="btn-icon delete-trigger" onclick="playSnd('C'); deleteTask(this)">✕</div>
                     </div>
                 </div>`;
             return wrapper;
         }
 
-        function updateView() {
-            const vp = document.getElementById('project-viewport');
-            vp.style.transform = `translateX(-${currentIdx * 100}%)`;
-            document.getElementById('page-num').innerText = `${currentIdx + 1} / ${projects.length}`;
-            document.getElementById('btn-left').style.display = currentIdx === 0 ? 'none' : 'flex';
-        }
-
-        function moveProject(dir) {
+        function moveCard(dir) {
+            if (document.body.classList.contains('has-hero')) return;
+            stopHero(true); 
             currentIdx += dir;
-            if (currentIdx >= projects.length) {
-                projects.push({ tasks: [{ val: "새로운 짐을 적어봐", isMain: true }] });
-            }
             if (currentIdx < 0) currentIdx = 0;
-            render();
-            save();
+            if (currentIdx >= projects.length) {
+                projects.push({ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] });
+                renderAllCards();
+            }
+            updateViewport(); saveData(true);
         }
 
-        function deleteProject() {
-            if(projects.length <= 1) return;
-            projects.splice(currentIdx, 1);
-            currentIdx = Math.max(0, currentIdx - 1);
-            render();
-            save();
+        function handleToggle(el) {
+            if (el.classList.contains('active')) return;
+            playSnd('D'); el.classList.add('active');
+            const currentWrapper = el.closest('.task-wrapper');
+            setTimeout(() => {
+                currentWrapper.classList.add('completed');
+                const card = currentWrapper.closest('.project-card');
+                const allRemaining = Array.from(card.querySelectorAll('.task-wrapper:not(.completed):not(.is-hidden)'));
+                const nextHero = allRemaining[allRemaining.length - 1];
+                if (nextHero) {
+                    nextHero.classList.remove('is-waiting');
+                    nextHero.classList.add('is-hero');
+                    nextHero.querySelector('.task-input').readOnly = true;
+                    nextHero.querySelector('.start-trigger').innerHTML = '<div class="pause-icon"><div></div><div></div></div>';
+                    updateStates(); 
+                } else {
+                    playSnd('F'); 
+                    document.getElementById('finish-action-text').innerText = projects.length > 1 ? "다른 짐 내려놓기" : "모든 짐 내려놓기";
+                    document.getElementById('finish-screen').style.display = 'flex';
+                }
+                saveData(true);
+            }, 300); 
         }
 
-        function addTask(btn) {
-            playSound('A');
-            const wrapper = btn.closest('.task-wrapper');
-            const list = wrapper.parentElement;
-            const newNode = createTaskEl("그 다음 할 일은?", false);
-            list.insertBefore(newNode, wrapper.nextSibling);
-            updateData();
-        }
-
-        function deleteTask(btn) {
-            playSound('C');
-            btn.closest('.task-wrapper').remove();
-            updateData();
-        }
-
-        function toggleFocus(btn) {
-            const wrapper = btn.closest('.task-wrapper');
-            const body = document.body;
-            if (!wrapper.classList.contains('is-hero')) {
-                playSound('B');
-                body.classList.add('has-hero');
-                wrapper.classList.add('is-hero');
-                btn.innerHTML = '<div class="pause-icon"><div></div><div></div></div>';
-                updateStates(wrapper);
+        function handleFinishAction() {
+            if (projects.length > 1) {
+                stopSnd(); 
+                projects.splice(currentIdx, 1);
+                currentIdx = 0; 
+                stopHero(true);
+                renderAllCards(); updateViewport();
+                document.getElementById('finish-screen').style.display = 'none';
+                saveData(true);
             } else {
-                playSound('E');
-                resetFocus();
+                isEndingAction = true;
+                document.getElementById('finish-screen').style.display = 'none';
+                document.getElementById('ending-overlay').style.display = 'flex';
+                setTimeout(() => { document.body.classList.add('empty-state'); }, 500);
+                projects = []; saveData(true);
+                // playSnd('E') 등으로 마지막 효과음이 끝나면 handleMainBtn() 실행됨
             }
         }
 
-        function resetFocus() {
+        function stopHero(silent = false) {
+            if(!silent && document.body.classList.contains('has-hero')) playSnd('E');
             document.body.classList.remove('has-hero');
             document.querySelectorAll('.task-wrapper').forEach(el => {
                 el.classList.remove('is-hero', 'is-waiting', 'is-hidden');
-                const btn = el.querySelector('.start-trigger');
-                if(btn) btn.innerHTML = '<div class="play-icon"></div>';
+                const input = el.querySelector('.task-input');
+                if (input) input.readOnly = false;
+                const sBtn = el.querySelector('.start-trigger');
+                if (sBtn) sBtn.innerHTML = '<div class="play-icon"></div>';
+                const tgl = el.querySelector('.toggle-frame');
+                if (tgl) tgl.classList.remove('active');
             });
         }
 
-        function updateStates(hero) {
-            const list = hero.parentElement;
-            const items = Array.from(list.querySelectorAll('.task-wrapper'));
-            const idx = items.indexOf(hero);
-            items.forEach((el, i) => {
-                if(i < idx) el.classList.add('is-waiting');
-                else if(i > idx) el.classList.add('is-hidden');
+        function toggleHero(btn) {
+            const wrapper = btn.closest('.task-wrapper');
+            if (!wrapper.classList.contains('is-hero')) {
+                playSnd('B'); document.body.classList.add('has-hero');
+                wrapper.classList.add('is-hero'); wrapper.querySelector('.task-input').readOnly = true;
+                btn.innerHTML = '<div class="pause-icon"><div></div><div></div></div>';
+                const card = wrapper.closest('.project-card');
+                setTimeout(() => {
+                    const scrollTarget = wrapper.offsetTop - (window.innerHeight / 2) + 50; 
+                    card.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+                }, 100);
+                updateStates();
+            } else { stopHero(); }
+        }
+
+        function updateStates() {
+            const currentCard = document.querySelectorAll('.project-card')[currentIdx];
+            if(!currentCard) return;
+            const all = Array.from(currentCard.querySelectorAll('.task-wrapper:not(.completed)'));
+            const hero = currentCard.querySelector('.is-hero');
+            if(!hero) return;
+            const idx = all.indexOf(hero);
+            all.forEach((el, i) => {
+                if(i > idx) { el.classList.add('is-hidden'); el.classList.remove('is-waiting'); }
+                else if(i < idx) { el.classList.add('is-waiting'); el.classList.remove('is-hidden'); }
+                else { el.classList.remove('is-waiting', 'is-hidden'); }
             });
         }
 
-        function doToggle(el) {
-            if (el.classList.contains('active')) return;
-            playSound('D');
-            el.classList.add('active');
-            const current = el.closest('.task-wrapper');
-            
-            setTimeout(() => {
-                current.classList.add('completed');
-                const next = Array.from(current.parentElement.querySelectorAll('.task-wrapper:not(.completed)')).pop();
-                if (next) {
-                    resetFocus();
-                    const nextBtn = next.querySelector('.start-trigger');
-                    toggleFocus(nextBtn);
-                } else {
-                    playSound('F');
-                    document.getElementById('finish-screen').style.display = 'flex';
-                }
-            }, 500);
+        function clearValue(el) { if (["너를 짓누르는 그 일을 적어봐", "그 일의 시작은?", "이 사이에 들어갈 일은?"].includes(el.value)) el.value = ""; }
+        
+        function addTask(btn) {
+            playSnd('A');
+            const currentWrapper = btn.closest('.task-wrapper');
+            const list = currentWrapper.closest('.task-list');
+            const prompt = currentWrapper === list.lastElementChild ? "그 일의 시작은?" : "이 사이에 들어갈 일은?";
+            const newTask = createTaskElement(prompt, false);
+            list.insertBefore(newTask, currentWrapper.nextSibling);
+            const card = btn.closest('.project-card');
+            setTimeout(() => { 
+                const targetPos = newTask.offsetTop - (window.innerHeight / 2) + 50;
+                card.scrollTo({ top: targetPos, behavior: 'smooth' }); 
+            }, 50);
+            saveData(true);
         }
 
-        function completeProject() {
-            if(projects.length > 1) {
-                projects.splice(currentIdx, 1);
-                currentIdx = 0;
-                document.getElementById('finish-screen').style.display = 'none';
-                resetFocus();
-                render();
-            } else {
-                document.getElementById('finish-screen').style.display = 'none';
-                document.getElementById('ending-overlay').style.display = 'flex';
-                setTimeout(() => { location.reload(); }, 4000);
-            }
-            save();
+        function deleteTask(btn) { btn.closest('.task-wrapper').remove(); saveData(true); stopHero(true); }
+        
+        function handleMainBtn() { 
+            stopSnd();
+            isEndingAction = false;
+            document.getElementById('dropdown').classList.remove('open');
+            document.body.classList.remove('empty-state', 'has-hero');
+            document.getElementById('finish-screen').style.display = 'none';
+            document.getElementById('ending-overlay').style.display = 'none';
+            document.getElementById('project-viewport').style.display = 'flex';
+            document.querySelector('.nav-bar').style.display = 'flex';
+            projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
+            currentIdx = 0;
+            renderAllCards(); updateViewport(); saveData(true);
         }
 
-        function updateData() {
-            const cards = document.querySelectorAll('.project-card');
-            projects = Array.from(cards).map(card => {
-                const inputs = Array.from(card.querySelectorAll('.task-input'));
-                return { tasks: inputs.map((input, i) => ({ val: input.value, isMain: i === (inputs.length-1) })) };
-            });
-            save();
-        }
+        function toggleDropdown() { document.getElementById('dropdown').classList.toggle('open'); }
+        function resetApp() { stopSnd(); handleMainBtn(); }
 
-        function handleHome() {
-            localStorage.removeItem('gtstart_data');
-            location.reload();
-        }
-
-        function handleNavVisibility(e) {
-            const nav = document.querySelector('.nav-bar');
-            const indicator = document.getElementById('indicator');
-            const btns = document.querySelectorAll('.nav-btn');
-            if (e.clientY > window.innerHeight - 80) {
-                indicator.style.opacity = 1;
-                btns.forEach(b => b.style.opacity = 0.8);
-            } else {
-                indicator.style.opacity = 0;
-                btns.forEach(b => b.style.opacity = 0);
-            }
-        }
-
-        window.onload = render;
+        // 앱 시작 시 데이터 로드
+        window.onload = loadStorage;
     </script>
 </body>
 </html>
