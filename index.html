@@ -11,12 +11,10 @@
             --nm-in: inset 3px 3px 7px #d1d1d6, inset -2px -2px 7px #ffffff;
             --nm-btn: 3px 3px 8px #d1d1d6, -2px -2px 6px #ffffff;
             --nm-btn-hover: 4px 4px 10px #c8c8cf, -3px -3px 8px #ffffff;
-            /* 유빈이가 찾은 사이즈 반영 */
             --app-width: 350px;
             --app-height: 450px;
         }
 
-        /* 창 드래그 및 기본 레이아웃 */
         .drag-handle {
             position: fixed; top: 0; left: 0; width: 100%; height: 40px;
             -webkit-app-region: drag; z-index: 10000;
@@ -30,7 +28,8 @@
 
         body { 
             background: var(--bg-color); color: var(--text-main); 
-            font-family: 'Inter', 'Pretendard', sans-serif; 
+            /* [수정] 폰트 우선순위 조정 및 굵기 최적화 */
+            font-family: 'Pretendard Variable', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', sans-serif; 
             margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden;
             -webkit-user-select: none; user-select: none;
             display: flex; justify-content: center; 
@@ -65,17 +64,14 @@
 
         body.has-hero .nav-bar { display: none; }
         
-        /* [수정] 상단 버튼 위치 스왑 및 중앙 정렬 유지 */
         .top-menu { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--app-width); display: flex; justify-content: flex-end; padding-right: 25px; gap: 12px; z-index: 10001; pointer-events: none; } 
         .menu-btn { pointer-events: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; }
-        /* 일시정지 아이콘 중앙 보정 */
         .stop-icon { width: 9px; height: 9px; background: #333; border-radius: 1px; margin: 0 auto; }
 
         .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; box-sizing: border-box; } 
-        .scroll-spacer { height: 150px; width: 100%; flex-shrink: 0; } /* 세로가 짧아져서 스페이서도 약간 조정 */
+        .scroll-spacer { height: 150px; width: 100%; flex-shrink: 0; } 
 
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
-        /* [수정] 완료 시 차분한 애니메이션 (opacity와 scale만 조절) */
         .task-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; transition: opacity 0.4s ease, transform 0.4s ease; }
         .task-wrapper.completed { opacity: 0; transform: scale(0.95); pointer-events: none; position: absolute; visibility: hidden; }
         
@@ -83,16 +79,18 @@
         .task-wrapper.is-waiting { opacity: 0.2; pointer-events: none; }
 
         .input-group { position: relative; display: flex; align-items: center; width: 100%; justify-content: center; }
+        
+        /* [수정] 입력창 가로 넓이 확장 (190px -> 260px) */
         .input-container { 
             position: relative; display: flex; align-items: center; 
             background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); 
-            width: 190px; padding: 0 40px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            width: 260px; padding: 0 40px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
             justify-content: center; z-index: 1; 
         }
 
-        .task-input { background: transparent; border: none; padding: 13px 0; font-size: 11px; font-weight: 800; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
+        /* [수정] 폰트 굵기 및 가독성 개선 */
+        .task-input { background: transparent; border: none; padding: 13px 0; font-size: 12px; font-weight: 700; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; font-family: inherit; }
         
-        /* [수정] 시작 버튼 왼쪽 / 삭제 버튼 오른쪽 유지하되 토글은 오른쪽 배치 */
         .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
         .start-trigger { left: 8px; opacity: 0; }
         .delete-trigger { right: 8px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
@@ -100,7 +98,6 @@
         .input-group:hover .start-trigger { opacity: 0.8; }
         .task-wrapper:not(.main-task):not(.is-hero) .input-group:hover .delete-trigger { opacity: 0.8; pointer-events: auto; }
 
-        /* [수정] 토글 버튼 오른쪽 배치 (is-hero 시 삭제버튼 자리 대체) */
         .inner-toggle { position: absolute; right: 8px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; pointer-events: none; }
         .is-hero .inner-toggle { width: 36px; opacity: 1; pointer-events: auto; }
         .is-hero .delete-trigger { display: none; }
@@ -110,7 +107,8 @@
         .toggle-frame.active { background: var(--point-blue); }
         .toggle-frame.active .toggle-circle { left: 19px; }
 
-        .is-hero .input-container { width: 220px; transform: scale(1.05) !important; background: #ffffff; }
+        /* [수정] Hero 상태 시 너비 확장 (220px -> 280px) */
+        .is-hero .input-container { width: 280px; transform: scale(1.05) !important; background: #ffffff; }
         .is-hero .start-trigger { opacity: 1 !important; color: #5dade2; }
 
         .bridge-zone { height: 40px; width: 100%; position: relative; display: flex; align-items: center; justify-content: center; }
@@ -133,7 +131,8 @@
         .option-item { padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; }
         .option-item:hover { background: #e8e8ea; color: var(--point-blue); }
 
-        #ending-overlay { position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--app-width); height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); }
+        /* [수정] 엔딩 화면 회색 줄 제거 (화면 꽉 채우기) */
+        #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); transform: none; max-width: none; }
         .plane-icon { width: 60px; height: 60px; fill: #444; opacity: 0.7; animation: plane-fly 4s ease-in-out infinite; }
         .cloud-icon { width: 100px; fill: #ffffff; opacity: 0.5; position: absolute; animation: cloud-move 15s linear infinite; }
         @keyframes plane-fly { 0%, 100% { transform: translate(0, 0) rotate(5deg); } 50% { transform: translate(15px, -20px) rotate(-5deg); } }
@@ -189,11 +188,13 @@
         let currentIdx = 0;
         let isEndingAction = false;
 
+        /* [수정] 오디오 재생 로직 보강 (재생 시점 초기화 추가) */
         function playSnd(name) { 
             window.parent.postMessage({ type: 'playSound', file: name }, '*');
             try {
                 let audio = new Audio(`https://jeonyoobin.github.io/gotostart/sounds/${name}.mp3`);
-                audio.play().catch(e => {});
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("Audio play blocked: ", e));
             } catch(e) {}
         }
         function stopSnd() { window.parent.postMessage({ type: 'stopSound' }, '*'); }
@@ -311,7 +312,6 @@
             playSnd('D'); el.classList.add('active');
             const currentWrapper = el.closest('.task-wrapper');
             
-            // [수정] 차분한 애니메이션 적용을 위해 시간을 조금 줌
             setTimeout(() => {
                 currentWrapper.classList.add('completed');
                 const card = currentWrapper.closest('.project-card');
