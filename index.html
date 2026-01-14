@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>시작으로가</title>
     <style>
-        /* 기존 widget.html의 CSS 스타일을 그대로 유지합니다 */
+        /* 기존 스타일과 레이아웃은 그대로 유지합니다 */
         :root {
             --bg-color: #f5f5f7; 
             --text-main: #3d444b; 
@@ -127,49 +127,67 @@
     </div>
 
     <div class="top-menu">
-        <div class="menu-btn" onclick="handleMainBtn();"><div class="stop-icon"></div></div>
-        <div class="menu-btn" onclick="window.close();">✕</div>
+        <div class="menu-btn" onclick="playSnd('H'); handleMainBtn();"><div class="stop-icon"></div></div>
+        <div class="menu-btn" onclick="playSnd('H'); window.close();">✕</div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-btn nav-left" id="btn-left" onclick="moveCard(-1)">❮</div>
+        <div class="nav-btn nav-left" id="btn-left" onclick="playSnd('H'); moveCard(-1)">❮</div>
         <div class="page-indicator" id="indicator">
             <div class="page-text" id="page-num">1 / 1</div>
             <div class="trash-container" style="position: absolute; top: 22px; display: flex; justify-content: center; width: 100%;">
-                <div class="trash-btn" id="project-trash" onclick="deleteCurrentProject();">
+                <div class="trash-btn" id="project-trash" onclick="playSnd('H'); deleteCurrentProject();">
                     <div class="trash-icon"></div>
                 </div>
             </div>
         </div>
-        <div class="nav-btn nav-right" id="btn-right" onclick="moveCard(1)">❯</div>
+        <div class="nav-btn nav-right" id="btn-right" onclick="playSnd('H'); moveCard(1)">❯</div>
     </div>
 
     <div id="project-viewport"></div>
 
     <div id="finish-screen">
         <div class="dropdown-container" id="dropdown">
-            <div class="select-main" onclick="toggleDropdown();"><span>선택</span><div style="width: 8px; height: 8px; border-right: 2px solid #555; border-bottom: 2px solid #555; transform: rotate(45deg); transition: 0.3s; margin-top: -4px;"></div></div>
+            <div class="select-main" onclick="playSnd('G'); toggleDropdown();"><span>선택</span><div style="width: 8px; height: 8px; border-right: 2px solid #555; border-bottom: 2px solid #555; transform: rotate(45deg); transition: 0.3s; margin-top: -4px;"></div></div>
             <div class="select-options">
-                <div class="option-item" id="finish-action-text" onclick="handleFinishAction();">모든 짐 내려놓기</div>
-                <div class="option-item" onclick="resetApp();">새로운 시작</div>
+                <div class="option-item" id="finish-action-text" onmouseover="playSnd('H')" onclick="handleFinishAction();">모든 짐 내려놓기</div>
+                <div class="option-item" onmouseover="playSnd('H')" onclick="resetApp();">새로운 시작</div>
             </div>
         </div>
     </div>
 
     <script>
-        // [변경] ZEP 스토리지 대신 로컬 스토리지 사용
+        // [수정] 효과음 재생 로직 (HTML5 Audio 사용)
+        let currentAudio = null;
+        function playSnd(name) {
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+            currentAudio = new Audio(name + ".wav"); // 파일이 index.html과 같은 위치에 있어야 함
+            currentAudio.play().catch(e => console.log("오디오 재생 실패:", e));
+        }
+        function stopSnd() {
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+        }
+
+        // [변경] 로컬 스토리지 사용
         const STORAGE_KEY = 'start_go_data';
         let projects = [{ tasks: [{ val: "너를 짓누르는 그 일을 적어봐", isMain: true }] }];
         let currentIdx = 0;
+        let isEndingAction = false;
 
         window.onload = function() {
             loadData();
             renderAllCards();
             updateViewport();
+            
+            // 효과음 객체가 종료되었을 때의 이벤트 감지 (엔딩 액션용)
+            if (currentAudio) {
+                currentAudio.onended = function() {
+                    if (isEndingAction) handleMainBtn();
+                };
+            }
         };
 
         function saveData() {
-            // 현재 입력값들 업데이트
             const cards = document.querySelectorAll('.project-card');
             cards.forEach((card, idx) => {
                 if (projects[idx]) {
@@ -192,8 +210,6 @@
                 currentIdx = parsed.currentIdx || 0;
             }
         }
-
-        // --- UI 제어 및 렌더링 함수들 (기존 기능 유지) ---
 
         function renderAllCards() {
             const viewport = document.getElementById('project-viewport');
@@ -232,7 +248,7 @@
                         <div class="btn-icon start-trigger" onclick="toggleHero(this)"><div class="play-icon"></div></div>
                         <input type="text" class="task-input" value="${val}" onfocus="clearValue(this)" spellcheck="false" oninput="saveData()">
                         <div class="inner-toggle"><div class="toggle-frame" onclick="handleToggle(this)"><div class="toggle-circle"></div></div></div>
-                        <div class="btn-icon delete-trigger" onclick="deleteTask(this)">✕</div>
+                        <div class="btn-icon delete-trigger" onclick="playSnd('C'); deleteTask(this)">✕</div>
                     </div>
                 </div>`;
             return wrapper;
@@ -240,6 +256,7 @@
 
         function moveCard(dir) {
             if (document.body.classList.contains('has-hero')) return;
+            stopHero(); 
             currentIdx += dir;
             if (currentIdx < 0) currentIdx = 0;
             if (currentIdx >= projects.length) {
@@ -252,7 +269,7 @@
 
         function handleToggle(el) {
             if (el.classList.contains('active')) return;
-            el.classList.add('active');
+            playSnd('D'); el.classList.add('active');
             const currentWrapper = el.closest('.task-wrapper');
             
             setTimeout(() => {
@@ -268,6 +285,7 @@
                     nextHero.querySelector('.start-trigger').innerHTML = '<div class="pause-icon"><div></div><div></div></div>';
                     updateStates(); 
                 } else {
+                    playSnd('F'); 
                     const actionBtn = document.getElementById('finish-action-text');
                     actionBtn.innerText = projects.length > 1 ? "다른 짐 내려놓기" : "모든 짐 내려놓기";
                     document.getElementById('finish-screen').style.display = 'flex';
@@ -279,17 +297,23 @@
         function toggleHero(btn) {
             const wrapper = btn.closest('.task-wrapper');
             if (!wrapper.classList.contains('is-hero')) {
-                document.body.classList.add('has-hero');
+                playSnd('B'); document.body.classList.add('has-hero');
                 wrapper.classList.add('is-hero');
                 wrapper.querySelector('.task-input').readOnly = true;
                 btn.innerHTML = '<div class="pause-icon"><div></div><div></div></div>';
+                
+                const card = wrapper.closest('.project-card');
+                setTimeout(() => {
+                    const scrollTarget = wrapper.offsetTop - (window.innerHeight / 2) + 50; 
+                    card.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+                }, 100);
+
                 updateStates();
-            } else { 
-                stopHero(); 
-            }
+            } else { stopHero(); }
         }
 
         function stopHero() {
+            if(document.body.classList.contains('has-hero')) playSnd('E');
             document.body.classList.remove('has-hero');
             document.querySelectorAll('.task-wrapper').forEach(el => {
                 el.classList.remove('is-hero', 'is-waiting', 'is-hidden');
@@ -304,6 +328,7 @@
 
         function updateStates() {
             const currentCard = document.querySelectorAll('.project-card')[currentIdx];
+            if(!currentCard) return;
             const all = Array.from(currentCard.querySelectorAll('.task-wrapper:not(.completed)'));
             const hero = currentCard.querySelector('.is-hero');
             if(!hero) return;
@@ -315,6 +340,7 @@
         }
 
         function addTask(btn) {
+            playSnd('A');
             const currentWrapper = btn.closest('.task-wrapper');
             const list = currentWrapper.closest('.task-list');
             const newTask = createTaskElement("이 사이에 들어갈 일은?", false);
@@ -322,10 +348,7 @@
             saveData();
         }
 
-        function deleteTask(btn) {
-            btn.closest('.task-wrapper').remove();
-            saveData();
-        }
+        function deleteTask(btn) { btn.closest('.task-wrapper').remove(); saveData(); }
 
         function deleteCurrentProject() {
             if (projects.length <= 1) return;
@@ -338,6 +361,7 @@
 
         function handleFinishAction() {
             if (projects.length > 1) {
+                stopSnd();
                 projects.splice(currentIdx, 1);
                 currentIdx = 0;
                 stopHero();
@@ -346,6 +370,7 @@
                 document.getElementById('finish-screen').style.display = 'none';
                 saveData();
             } else {
+                isEndingAction = true;
                 document.getElementById('finish-screen').style.display = 'none';
                 document.getElementById('ending-overlay').style.display = 'flex';
                 setTimeout(() => { document.body.classList.add('empty-state'); }, 500);
@@ -354,23 +379,16 @@
             }
         }
 
-        function handleMainBtn() { 
-            location.reload(); 
-        }
-
-        function resetApp() {
-            localStorage.removeItem(STORAGE_KEY);
-            location.reload();
-        }
-
+        function handleMainBtn() { stopSnd(); location.reload(); }
+        function resetApp() { stopSnd(); localStorage.removeItem(STORAGE_KEY); location.reload(); }
         function toggleDropdown() { document.getElementById('dropdown').classList.toggle('open'); }
+        function clearValue(el) { if (["너를 짓누르는 그 일을 적어봐", "이 사이에 들어갈 일은?"].includes(el.value)) el.value = ""; }
         function showNav(e) {
             const h = window.innerHeight;
             const lb = document.getElementById('btn-left'), rb = document.getElementById('btn-right'), ind = document.getElementById('indicator');
             if (e.clientY > h - 100) { lb.style.opacity = "0.8"; rb.style.opacity = "0.8"; ind.style.opacity = "1"; }
             else { lb.style.opacity = "0"; rb.style.opacity = "0"; ind.style.opacity = "0"; }
         }
-        function clearValue(el) { if (["너를 짓누르는 그 일을 적어봐", "이 사이에 들어갈 일은?"].includes(el.value)) el.value = ""; }
     </script>
 </body>
 </html>
