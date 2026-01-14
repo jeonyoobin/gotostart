@@ -23,13 +23,13 @@
         }
         .top-menu .menu-btn { -webkit-app-region: no-drag; pointer-events: auto; }
 
-        * { scrollbar-gutter: stable; }
+        * { scrollbar-gutter: stable; box-sizing: border-box; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; border: 2px solid var(--bg-color); }
 
         body { 
-            background: var(--bg-color); color: var(--text-main); font-family: 'Inter', 'Pretendard', sans-serif; 
+            background: var(--bg-color); color: var(--text-main); font-family: 'Pretendard', -apple-system, sans-serif; 
             margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden;
             -webkit-user-select: none; user-select: none;
             transition: none; 
@@ -71,21 +71,21 @@
         .input-container { 
             position: relative; display: flex; align-items: center; 
             background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); 
-            width: 180px; padding: 0 35px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
-            justify-content: center; z-index: 1; 
+            width: 180px; padding: 0; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            justify-content: center; z-index: 1; overflow: visible;
         }
 
         .input-container:has(.start-trigger:hover) { transform: scale(1.03); box-shadow: 0 0 18px rgba(74, 126, 179, 0.1), var(--nm-out); background: #ffffff; }
-        .task-input { background: transparent; border: none; padding: 14px 0; font-size: 12px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; }
+        .task-input { background: transparent; border: none; padding: 14px 0; font-size: 12px; font-weight: 600; color: var(--text-main); width: 100%; text-align: center; outline: none; z-index: 2; font-family: inherit; }
         
         .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
-        .start-trigger { left: 8px; opacity: 0; }
-        .delete-trigger { right: 8px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
+        .start-trigger { left: -13px; opacity: 0; }
+        .delete-trigger { right: -13px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
 
         .input-group:hover .start-trigger { opacity: 0.8; }
         .task-wrapper:not(.main-task):not(.is-hero) .input-group:hover .delete-trigger { opacity: 0.8; pointer-events: auto; }
 
-        .inner-toggle { position: absolute; right: 8px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
+        .inner-toggle { position: absolute; right: -13px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
         .is-hero .inner-toggle { width: 36px; opacity: 1; }
         
         .toggle-frame { width: 34px; height: 18px; background: #e0e0e0; border-radius: 10px; display: flex; align-items: center; cursor: pointer; position: relative; transition: background 0.2s; }
@@ -109,10 +109,10 @@
 
         #finish-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
         .select-main { width: 200px; padding: 14px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; }
-        .dropdown-container { position: relative; width: 200px; }
+        .dropdown-container { position: relative; width: 200px; display: flex; justify-content: center; }
         .select-options { position: absolute; top: 58px; left: 0; width: 100%; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); display: none; flex-direction: column; z-index: 8001; padding: 6px 0; }
         .dropdown-container.open .select-options { display: flex; }
-        .option-item { padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; }
+        .option-item { padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; text-align: left; }
         .option-item:hover { background: #e8e8ea; color: var(--point-blue); }
 
         #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); }
@@ -186,7 +186,6 @@
         }
 
         function saveData(isSilent = false) {
-            // 현재 화면의 인풋값들을 프로젝트 데이터에 반영
             const cards = document.querySelectorAll('.project-card');
             cards.forEach((card, idx) => {
                 if (projects[idx]) {
@@ -203,6 +202,14 @@
 
         // --- 사운드 재생 (HTML5 Audio) ---
         function playSnd(name) {
+            // 엔딩 화면이 켜져있고 '선택' 버튼 누르는 소리('G')나 호버 소리('H')일 때는 노래 안 끊기게 예외처리
+            if (document.getElementById('finish-screen').style.display === 'flex' && (name === 'G' || name === 'H')) {
+                // 기존 노래 유지하면서 효과음만 재생
+                let effect = new Audio(`./${name}.wav`);
+                effect.play().catch(e => {});
+                return;
+            }
+
             stopSnd();
             currentAudio = new Audio(`./${name}.wav`);
             currentAudio.play().catch(e => console.log("Audio play blocked or missing file"));
@@ -219,7 +226,6 @@
             }
         }
 
-        // --- 유빈이가 제공한 로직 그대로 유지 ---
         function showNav(e) {
             const h = window.innerHeight;
             const lb = document.getElementById('btn-left'), rb = document.getElementById('btn-right'), ind = document.getElementById('indicator');
@@ -307,6 +313,7 @@
                     updateStates(); 
                 } else {
                     playSnd('F'); 
+                    document.getElementById('dropdown').classList.remove('open'); // 엔딩창 뜰 때 드롭다운 닫기
                     document.getElementById('finish-action-text').innerText = projects.length > 1 ? "다른 짐 내려놓기" : "모든 짐 내려놓기";
                     document.getElementById('finish-screen').style.display = 'flex';
                 }
@@ -329,7 +336,6 @@
                 document.getElementById('ending-overlay').style.display = 'flex';
                 setTimeout(() => { document.body.classList.add('empty-state'); }, 500);
                 projects = []; saveData(true);
-                // playSnd('E') 등으로 마지막 효과음이 끝나면 handleMainBtn() 실행됨
             }
         }
 
@@ -412,7 +418,6 @@
         function toggleDropdown() { document.getElementById('dropdown').classList.toggle('open'); }
         function resetApp() { stopSnd(); handleMainBtn(); }
 
-        // 앱 시작 시 데이터 로드
         window.onload = loadStorage;
     </script>
 </body>
