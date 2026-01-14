@@ -15,7 +15,10 @@
             --nm-btn-hover: 4px 4px 10px #c8c8cf, -3px -3px 8px #ffffff;
         }
 
+        /* [수정 3] 기본 상태에선 스크롤 공간 유지하되, 엔딩 등 빈 상태에선 제거하여 회색 줄 삭제 */
         * { scrollbar-gutter: stable; }
+        body.empty-state * { scrollbar-gutter: auto; }
+
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; border: 2px solid var(--bg-color); }
@@ -27,7 +30,7 @@
             transition: none; 
         }
 
-        /* [수정] 윈도우 창 이동을 위한 드래그 영역 */
+        /* 드래그 핸들 */
         .drag-handle {
             position: fixed; top: 0; left: 0; width: calc(100% - 100px); height: 60px;
             z-index: 10000; -webkit-app-region: drag; pointer-events: none;
@@ -59,7 +62,12 @@
 
         .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; box-sizing: border-box; } 
         .scroll-spacer { height: 190px; width: 100%; flex-shrink: 0; }
+
+        /* [수정 1] 리스트의 시각적 최상단(DOM상 마지막) 요소 처리: 줄 제거, 버튼 항상 표시 */
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
+        .task-list .task-wrapper:last-child .bridge-line { display: none; }
+        .task-list .task-wrapper:last-child .bridge-add-btn { opacity: 1 !important; }
+
         .task-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; transition: 0.3s ease; }
         .task-wrapper.completed { display: none !important; }
         .task-wrapper.is-hidden { display: none !important; } 
@@ -96,7 +104,8 @@
         .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
         .pause-icon { display: flex; gap: 3.5px; } .pause-icon div { width: 2.5px; height: 10px; background: #333; }
 
-        #finish-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
+        /* [수정 4] 엔딩 화면 위치 상향 조정 (padding-bottom으로 중심점 이동) */
+        #finish-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; padding-bottom: 120px; box-sizing: border-box; }
         .select-main { width: 200px; padding: 14px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; -webkit-app-region: no-drag; }
         .dropdown-container { position: relative; width: 200px; }
         .select-options { position: absolute; top: 58px; left: 0; width: 100%; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); display: none; flex-direction: column; z-index: 8001; padding: 6px 0; }
@@ -145,18 +154,19 @@
         <div class="dropdown-container" id="dropdown">
             <div class="select-main" onclick="playSnd('G', true); toggleDropdown();"><span>선택</span><div style="width: 8px; height: 8px; border-right: 2px solid #555; border-bottom: 2px solid #555; transform: rotate(45deg); transition: 0.3s; margin-top: -4px;"></div></div>
             <div class="select-options">
-                <div class="option-item" id="finish-action-text" onmouseover="playSnd('H')" onclick="handleFinishAction();">모든 짐 내려놓기</div>
-                <div class="option-item" onmouseover="playSnd('H')" onclick="resetApp();">새로운 시작</div>
+                <div class="option-item" id="finish-action-text" onmouseover="playSnd('H', true)" onclick="handleFinishAction();">모든 짐 내려놓기</div>
+                <div class="option-item" onmouseover="playSnd('H', true)" onclick="resetApp();">새로운 시작</div>
             </div>
         </div>
     </div>
 
     <script>
         let currentAudio = null;
-        /* [수정] 드롭다운 열 때 소리 뚝 끊김 방지 */
         function playSnd(name, isDropdown = false) {
+            // isDropdown이 true면 기존 오디오를 끄지 않음
             if (!isDropdown && currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
             let audio = new Audio(name + ".wav");
+            // 드롭다운 효과음(호버음 등)은 메인 오디오 변수(currentAudio)에 할당하지 않아 메인 음악과 별개로 재생됨
             if (!isDropdown) currentAudio = audio;
             audio.play().catch(e => {});
         }
@@ -325,7 +335,6 @@
             }
         }
 
-        /* [수정] 정지 버튼 클릭 시 초기화 기능 */
         function handleMainBtn() { 
             stopSnd();
             isEndingAction = false;
