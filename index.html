@@ -13,37 +13,43 @@
             --nm-btn-hover: 4px 4px 10px #c8c8cf, -3px -3px 8px #ffffff;
         }
 
-        * { scrollbar-gutter: stable; }
+        /* [수정] 창 드래그 영역 추가 및 상단 버튼 클릭 보정 */
+        .drag-handle {
+            position: fixed; top: 0; left: 0; width: 100%; height: 40px;
+            -webkit-app-region: drag; z-index: 10000;
+        }
+        .top-menu .menu-btn { -webkit-app-region: no-drag; }
+
+        * { scrollbar-gutter: stable; box-sizing: border-box; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; border: 2px solid var(--bg-color); }
 
         body { 
-            background: var(--bg-color); color: var(--text-main); font-family: 'Inter', 'Pretendard', sans-serif; 
+            background: var(--bg-color); color: var(--text-main); 
+            font-family: 'Inter', 'Pretendard', sans-serif; 
             margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden;
             -webkit-user-select: none; user-select: none;
-            transition: none; 
+            display: flex; justify-content: center; /* [수정] 중앙 정렬 */
         }
 
+        /* [수정] 폭을 380px로 고정하여 넙대대해짐 방지 */
         #project-viewport { 
-            display: flex; width: 100%; height: 100vh; 
-            transition: transform 0s; 
-            align-items: flex-start; 
+            display: flex; width: 100%; max-width: 380px; height: 100vh; 
+            transition: transform 0s; align-items: flex-start; 
         }
-        /* 전환 애니메이션 설정 */
         #project-viewport.ready { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
-        /* 전환 중(ready 클래스가 없을 때)에는 스크롤바 숨김 처리 */
         .project-card { 
             min-width: 100%; height: 100vh; 
-            overflow-y: hidden; /* 기본적으로 숨김 */
+            overflow-y: hidden; 
             overflow-x: hidden; 
             display: flex; flex-direction: column; align-items: center; 
         }
-        /* 이동이 완료된 ready 상태에서만 스크롤 활성화 */
         #project-viewport.ready .project-card { overflow-y: auto; }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; pointer-events: none; z-index: 9999; display: flex; justify-content: center; align-items: center; background: linear-gradient(to top, var(--bg-color) 60%, transparent); }
+        /* [수정] 네비게이션 바 폭도 380px로 제한 */
+        .nav-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 380px; height: 120px; pointer-events: none; z-index: 9999; display: flex; justify-content: center; align-items: center; background: linear-gradient(to top, var(--bg-color) 60%, transparent); }
         .nav-btn { position: absolute; bottom: 30px; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #555; opacity: 0; transition: 0.2s; pointer-events: auto; }
         .nav-left { left: 25px; } .nav-right { right: 25px; }
 
@@ -58,19 +64,11 @@
 
         body.has-hero .nav-bar { display: none; }
         
-        /* 상단 메뉴 위치 및 스타일 유지 */
-        .top-menu { position: fixed; top: 20px; right: 25px; display: flex; gap: 12px; z-index: 9900; } 
+        .top-menu { position: fixed; top: 20px; right: 25px; display: flex; gap: 12px; z-index: 10001; } 
         .menu-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; }
         .stop-icon { width: 9px; height: 9px; background: #333; border-radius: 1px; }
 
-        .task-container { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            width: 100%; 
-            min-height: 100%;
-            box-sizing: border-box; 
-        } 
+        .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; box-sizing: border-box; } 
         .scroll-spacer { height: 190px; width: 100%; flex-shrink: 0; }
 
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
@@ -95,14 +93,12 @@
         
         .btn-icon { position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); transition: 0.2s; z-index: 5; }
         
-        /* 시작 버튼 왼쪽 배치 유지 */
         .start-trigger { left: 8px; opacity: 0; }
         .delete-trigger { right: 8px; color: #ff6b6b; font-size: 11px; opacity: 0; pointer-events: none; }
 
         .input-group:hover .start-trigger { opacity: 0.8; }
         .task-wrapper:not(.main-task):not(.is-hero) .input-group:hover .delete-trigger { opacity: 0.8; pointer-events: auto; }
 
-        /* 토글 버튼 오른쪽 배치 유지 */
         .inner-toggle { position: absolute; right: 8px; width: 0; opacity: 0; transition: 0.4s; display: flex; align-items: center; z-index: 10; }
         .is-hero .inner-toggle { width: 36px; opacity: 1; }
         
@@ -126,7 +122,7 @@
         .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
         .pause-icon { display: flex; gap: 3.5px; } .pause-icon div { width: 2.5px; height: 10px; background: #333; }
 
-        #finish-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
+        #finish-screen { position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 380px; height: 100vh; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); z-index: 8000; }
         .select-main { width: 200px; padding: 14px 20px; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-btn); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text-main); transition: 0.3s; box-sizing: border-box; }
         .dropdown-container { position: relative; width: 200px; }
         .select-options { position: absolute; top: 58px; left: 0; width: 100%; background: var(--bg-color); border-radius: 14px; box-shadow: var(--nm-out); display: none; flex-direction: column; z-index: 8001; padding: 6px 0; }
@@ -134,7 +130,7 @@
         .option-item { padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: 0.2s; }
         .option-item:hover { background: #e8e8ea; color: var(--point-blue); }
 
-        #ending-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: none; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); }
+        #ending-overlay { position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 380px; height: 100vh; display: none; z-index: 9800; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: none; background: linear-gradient(180deg, #dbeafe 0%, #f5f5f7 100%); }
         .plane-icon { width: 60px; height: 60px; fill: #444; opacity: 0.7; animation: plane-fly 4s ease-in-out infinite; }
         .cloud-icon { width: 100px; fill: #ffffff; opacity: 0.5; position: absolute; animation: cloud-move 15s linear infinite; }
         @keyframes plane-fly { 0%, 100% { transform: translate(0, 0) rotate(5deg); } 50% { transform: translate(15px, -20px) rotate(-5deg); } }
@@ -147,6 +143,7 @@
     </style>
 </head>
 <body id="main-body" onmousemove="showNav(event)">
+    <div class="drag-handle"></div>
 
     <div id="ending-overlay">
         <svg class="cloud-icon" style="top: 20%; animation-delay: -2s;" viewBox="0 0 24 24"><path d="M17.5,19c-3,0-5.5-2.5-5.5-5.5c0-0.1,0-0.2,0-0.3c-0.5,0.2-1.1,0.3-1.7,0.3c-2.4,0-4.3-1.9-4.3-4.3c0-0.3,0-0.6,0.1-0.8 C4.2,9,2.5,10.8,2.5,13c0,3,2.5,5.5,5.5,5.5h9.5c2.2,0,4-1.8,4-4c0-2.2-1.8-4-4-4c-0.3,0-0.5,0-0.8,0.1c-0.2-2.7-2.5-4.8-5.2-4.8 c-1.6,0-3,0.7-3.9,1.8C8.1,7.2,8.5,7,9,7c2.8,0,5,2.2,5,5c0,0.3,0,0.5-0.1,0.8c1.3,0,2.4,0.7,3.1,1.8c0.2-0.1,0.3-0.1,0.5-0.1 c1.4,0,2.5,1.1,2.5,2.5S18.9,19.5,17.5,19z"/></svg>
@@ -189,7 +186,14 @@
         let currentIdx = 0;
         let isEndingAction = false;
 
-        function playSnd(name) { window.parent.postMessage({ type: 'playSound', file: name }, '*'); }
+        // [수정] 사운드 재생 시 깃허브 경로를 통해 Nativefier에서도 소리나게 보완
+        function playSnd(name) { 
+            window.parent.postMessage({ type: 'playSound', file: name }, '*');
+            try {
+                let audio = new Audio(`https://jeonyoobin.github.io/gotostart/sounds/${name}.mp3`);
+                audio.play().catch(e => {});
+            } catch(e) {}
+        }
         function stopSnd() { window.parent.postMessage({ type: 'stopSound' }, '*'); }
 
         window.onload = function() { window.parent.postMessage({ type: 'ready' }, '*'); };
