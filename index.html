@@ -15,7 +15,6 @@
             --nm-btn-hover: 4px 4px 10px #c8c8cf, -3px -3px 8px #ffffff;
         }
 
-        /* 회색 줄 방지 */
         html, body { scrollbar-gutter: auto; } 
         body.empty-state { overflow: hidden !important; scrollbar-gutter: auto !important; }
 
@@ -59,12 +58,20 @@
 
         body.has-hero .nav-bar { display: none; }
         .top-menu { position: fixed; top: 20px; right: 25px; display: flex; gap: 12px; z-index: 10005; } 
-        .menu-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; transition: 0.2s; -webkit-app-region: no-drag; }
+        
+        /* [수정 3] 메뉴 버튼 호버링 효과 추가 (색상 변경 없이 크기와 그림자만) */
+        .menu-btn { 
+            width: 34px; height: 34px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--nm-btn); 
+            display: flex; align-items: center; justify-content: center; cursor: pointer; color: #555; 
+            transition: 0.2s; -webkit-app-region: no-drag; 
+        }
+        .menu-btn:hover { transform: scale(1.1); box-shadow: var(--nm-btn-hover); }
+
         .stop-icon { width: 9px; height: 9px; background: #333; border-radius: 1px; }
 
         .task-container { display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100%; box-sizing: border-box; } 
         
-        /* [수정] 60px -> 210px로 변경 (숫자가 커져야 아래로 내려옴!) */
+        /* 메인 화면 텍스트바 위치 (아까 정한 210px 유지) */
         .scroll-spacer { height: 210px; width: 100%; flex-shrink: 0; }
 
         .task-list { display: flex; flex-direction: column-reverse; align-items: center; width: 100%; }
@@ -116,7 +123,6 @@
         .bridge-add-btn:hover { box-shadow: var(--nm-btn-hover); transform: scale(1.1); }
         .bridge-zone:hover .bridge-add-btn { opacity: 1 !important; }
 
-        /* 텍스트바가 하나뿐일 때(:only-child)는 상단 + 버튼 항상 표시 */
         .task-wrapper:only-child .bridge-add-btn { opacity: 1 !important; }
 
         .play-icon { width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 6.5px solid #333; margin-left: 2px; }
@@ -126,7 +132,8 @@
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; 
             flex-direction: column; align-items: center; justify-content: center; 
             background: var(--bg-color); z-index: 8000; 
-            padding-bottom: 0;
+            /* [수정 1] 엔딩 화면 텍스트바 위치 상향 조정 (padding-bottom 추가로 중심을 위로 밀어올림) */
+            padding-bottom: 150px; 
             box-sizing: border-box; 
         }
         
@@ -293,6 +300,8 @@
                     updateStates(); 
                 } else {
                     playSnd('F'); 
+                    // [수정 2] 엔딩 화면 진입 시 드롭다운 닫힘 상태로 초기화
+                    document.getElementById('dropdown').classList.remove('open');
                     document.getElementById('finish-action-text').innerText = projects.length > 1 ? "다른 짐 내려놓기" : "모든 짐 내려놓기";
                     document.getElementById('finish-screen').style.display = 'flex';
                 }
